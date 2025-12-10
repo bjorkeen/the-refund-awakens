@@ -63,7 +63,7 @@ const AuthPanel = () => {
 };
 
 const ActionButton = ({ onClick, label, className }) => (
-  <button onClick={onClick} className={className}>
+  <button onClick={onClick} className={`button ${className}`}>
     {label}
   </button>
 );

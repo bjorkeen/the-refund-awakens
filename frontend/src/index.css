@@ -1,6 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -17,6 +14,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -28,10 +30,11 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
+  display: block;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #242424;
 }
 
 h1 {
@@ -59,16 +62,58 @@ button:focus-visible {
 }
 
 .btn-blue {
-  @apply bg-blue-500 text-white px-4 py-2 rounded;
+    background-color: #3b82f6; /* Μπλε 500 */
+    color: white;
+    /* Τα padding, rounded, κλπ. έρχονται από το βασικό στυλ 'button' */
 }
 .btn-green {
-  @apply bg-green-500 text-white px-4 py-2 rounded;
+    background-color: #22c55e; /* Πράσινο 500 */
+    color: white;
 }
 .btn-yellow {
-  @apply bg-yellow-500 text-white px-4 py-2 rounded;
+    background-color: #f59e0b; /* Κίτρινο 500 */
+    color: white;
 }
 .btn-purple {
-  @apply bg-purple-500 text-white px-4 py-2 rounded;
+    background-color: #a855f7; /* Μωβ 500 */
+    color: white;
+}
+
+.auth-form-container {
+    display: flex;
+    flex-direction: column; /* Τα βάζουμε σε στήλη */
+    gap: 10px; /* Απόσταση μεταξύ των inputs */
+    margin-bottom: 20px; /* Απόσταση από τα κουμπιά */
+}
+.auth-input {
+    width: 100%; /* Πλήρες πλάτος */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    /* Μπορείτε να προσθέσετε χρώμα φόντου για dark mode αν χρειαστεί */
+    background-color: #333; 
+    color: white;
+}
+
+.page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.panel {
+  background-color: #1a1a1a;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  border: 1px solid #333;
 }
 
 
@@ -82,5 +127,16 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+  .panel {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Πιο απαλή σκιά στο φως */
+  }
+  .panel h1 {
+    color: #111827;
+  }
+  .panel p {
+    color: #4b5563;
   }
 }

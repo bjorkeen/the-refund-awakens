@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
 const AuthForm = ({ form, onChange }) => (
-  <>
+  <div className="auth-form-container">
     <input
       name="username"
       placeholder="Username"
@@ -17,7 +17,7 @@ const AuthForm = ({ form, onChange }) => (
       onChange={onChange}
       className="border p-2 rounded m-1"
     />
-  </>
+  </div>
 );
 
 export default AuthForm;

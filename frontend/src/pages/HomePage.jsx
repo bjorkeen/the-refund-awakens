@@ -1,13 +1,13 @@
-import AuthPanel from '../components/AuthPanel';
+import AuthPanel from "../components/AuthPanel";
 
 const HomePage = () => {
   return (
     <div className="page-container">
       <div className="panel">
-        <h1>Secure Auth Boilerplate (React + Express)</h1>
-        <p className="text-gray-600 dark:text-gray-300">
-              Built with React + Express, styled with Tailwind.
-            </p>
+        <h1>Electronics R&R</h1>
+        <p style={{ marginTop: "0", marginBottom: "20px", color: "#888" }}>
+          {" Returns & Repairs Management "}
+        </p>
         <AuthPanel />
       </div>
     </div>
