@@ -55,8 +55,7 @@ const AuthPanel = () => {
 
       {/* Form */}
       <div className={styles.body}>
-        <AuthForm form={form} onChange={handleChange} />
-
+        <AuthForm form={form} onChange={handleChange} mode={mode} />
         {/* Submit Button */}
         <button className={styles.submitButton} onClick={handleSubmit}>
           {mode === "login" ? "Sign In" : "Sign Up"}
