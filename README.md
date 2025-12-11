@@ -168,3 +168,21 @@ Make sure your backend and frontend ports align with `.env` and config files.
 MIT — free to use, remix, and build on.
 
 ...
+# Project Setup
+
+Εδω ειναι ο κωδικας για το landing page. 
+Το εκανα docker για να τρεχει ευκολα στον server.
+
+Πως το τρεχουμε:
+
+1. Κατεβασμα:
+`git clone <https://github.com/bjorkeen/express-react-template/tree/landingPage> .`
+
+2. Εκκινηση (θελει --build για να φτιαξει τα images):
+`docker compose up -d --build`
+
+
+Φακελοι:
+- frontend: Ολα τα αρχεια του React
+- backend: Ο server (Node) - χωρις βαση για την ωρα
+- docker-compose.yml: Το script που τα σηκωνει ολα
