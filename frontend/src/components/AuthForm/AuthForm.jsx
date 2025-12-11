@@ -1,11 +1,23 @@
 import React from "react";
-import styles from './AuthForm.module.css';
+import styles from "./AuthForm.module.css";
 
-const AuthForm = ({ form, onChange }) => (
+const AuthForm = ({ form, onChange, mode }) => (
   <div className={styles.container}>
+    {mode === "register" && (
+      <input
+        name="fullName"
+        type="text"
+        placeholder="Full Name"
+        value={form.fullName}
+        onChange={onChange}
+        className={styles.input}
+      />
+    )}
+    
     <input
       name="username"
-      placeholder="Username"
+      type="email"
+      placeholder="Email Address"
       value={form.username}
       onChange={onChange}
       className={styles.input}

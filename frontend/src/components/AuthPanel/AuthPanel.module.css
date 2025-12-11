@@ -1,19 +1,98 @@
-.actionsContainer {
+/* Η λευκή κάρτα */
+.card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 400px; /* Στενή κάρτα όπως στο mockup */
+  overflow: hidden; /* Για να μην βγαίνουν τα tabs έξω */
+  border: 1px solid var(--color-border);
+}
+
+.header {
+  padding: 24px 24px 0 24px;
+  text-align: left;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.subtitle {
+  margin: 4px 0 20px 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+/* Tabs Styling */
+.tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-  justify-content: center;
+  background-color: var(--color-bg);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
 }
 
-.message {
-  margin-top: 16px;
-  text-align: center;
+.tab {
+  flex: 1;
+  padding: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
-.privileged {
+.activeTab {
+  background-color: white;
+  color: var(--color-text-main);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  font-weight: 600;
+}
+
+.body {
+  padding: 0 24px 24px 24px;
+}
+
+/* Το κύριο κουμπί (Μπλε) */
+.submitButton {
+  width: 100%;
+  padding: 10px;
   margin-top: 16px;
-  color: #15803d; /* green-700 */
-  text-align: center;
-  font-weight: bold;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+  background-color: var(--color-primary-hover);
+}
+
+/* Development Box Styling */
+.devBox {
+  background-color: #f8fafc; /* Πολύ απαλό μπλε-γκρι */
+  border-top: 1px solid var(--color-border);
+  padding: 16px 24px;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.devBox h4 {
+  margin: 0 0 4px 0;
+  color: var(--color-text-main);
+}
+
+.devBox ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
 }

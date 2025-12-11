@@ -1,29 +1,27 @@
-/* Το κεντρικό container της σελίδας */
 .page-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   width: 100%;
   padding: 20px;
+  background-color: var(--color-bg); /* Απαλό γκρι φόντο */
 }
 
-/* Το Panel (η κάρτα) */
-.panel {
-  background-color: #1a1a1a;
-  padding: 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  width: 100%;
-  max-width: 420px;
+.logo-area {
+  margin-bottom: 2rem;
   text-align: center;
-  border: 1px solid #333;
 }
 
-@media (prefers-color-scheme: light) {
-  .panel {
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  }
+.logo-area h1 {
+  color: var(--color-text-main);
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.logo-area p {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
 }

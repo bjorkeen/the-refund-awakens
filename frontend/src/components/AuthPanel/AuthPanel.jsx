@@ -1,72 +1,90 @@
-import { useState } from 'react';
-import { register, login, logout, checkAccess, testApi } from '../../services/authService';
-import { useAccess } from '../../context/AccessContext';
-import AuthForm from '../AuthForm/AuthForm';
-import MessageBox from '../MessageBox/MessageBox';
-import styles from './AuthPanel.module.css';
+import { useState } from "react";
+import AuthForm from "../AuthForm";
+import MessageBox from "../MessageBox";
+import styles from "./AuthPanel.module.css";
 
 const AuthPanel = () => {
-  const { hasAccess, refreshAccess } = useAccess();
-  const [form, setForm] = useState({ username: '', password: '' });
-  const [message, setMessage] = useState('');
+  // State:  Login / Register
+  const [mode, setMode] = useState("login"); // 'login' or 'register'
+  const [form, setForm] = useState({
+    username: "",
+    password: "",
+    fullName: "",
+  });
+  const [message, setMessage] = useState("");
+
+  // Check if (Development environment) true (Vite specific)
+  const isDev = import.meta.env.DEV;
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleAction = async (actionType) => {
-    try {
-      let res;
-      switch (actionType) {
-        case 'register':
-          res = await register(form);
-          break;
-        case 'login':
-          res = await login(form);
-          await refreshAccess();
-          break;
-        case 'logout':
-          res = await logout();
-          await refreshAccess();
-          break;
-        case 'check':
-          res = await checkAccess();
-          break;
-        case 'test':
-          res = await testApi();
-          break;
-        default:
-          throw new Error('Unknown action');
-      }
-
-      setMessage(res?.data?.message || 'Success');
-    } catch (err) {
-      const errMsg = err?.response?.data?.error || 'Action failed';
-      setMessage(errMsg);
-    }
+  const handleSubmit = async () => {
+    //  login() OR register() depending on mode
+    console.log(`Submitting ${mode} form:`, form);
   };
 
   return (
-    <div className="w-full">
-      <AuthForm form={form} onChange={handleChange} />
+    <div className={styles.card}>
+      {/* Tabs Header (Sign In / Sign Up) */}
+      <div className={styles.header}>
+        <h2 className={styles.title}>Welcome</h2>
+        <p className={styles.subtitle}>
+          Sign in to your account or create a new one
+        </p>
 
-      <div className={styles.actionsContainer}>
-        <ActionButton onClick={() => handleAction('test')} label="Test API" className="btn-blue" />
-        <ActionButton onClick={() => handleAction('register')} label="Register" className="btn-blue" />
-        <ActionButton onClick={() => handleAction('login')} label="Login" className="btn-green" />
-        <ActionButton onClick={() => handleAction('logout')} label="Logout" className="btn-yellow" />
-        <ActionButton onClick={() => handleAction('check')} label="Check Access" className="btn-purple" />
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${
+              mode === "login" ? styles.activeTab : ""
+            }`}
+            onClick={() => setMode("login")}
+          >
+            Sign In
+          </button>
+          <button
+            className={`${styles.tab} ${
+              mode === "register" ? styles.activeTab : ""
+            }`}
+            onClick={() => setMode("register")}
+          >
+            Sign Up
+          </button>
+        </div>
       </div>
 
-      <MessageBox message={message} />
-      {hasAccess && <h4 className={styles.privileged}>Privileged Content!</h4>}
+      {/* Form */}
+      <div className={styles.body}>
+        <AuthForm form={form} onChange={handleChange} />
+
+        {/* Submit Button */}
+        <button className={styles.submitButton} onClick={handleSubmit}>
+          {mode === "login" ? "Sign In" : "Sign Up"}
+        </button>
+
+        <MessageBox message={message} />
+      </div>
+
+      {/* 3. Development Only Box */}
+      {isDev && (
+        <div className={styles.devBox}>
+          <h4>Demo Accounts:</h4>
+          <p>
+            Create your own account or use these test credentials (password:
+            demo123):
+          </p>
+          <ul>
+            <li>
+              <strong>Customer:</strong> customer@demo.com
+            </li>
+            <li>
+              <strong>Manager:</strong> manager@demo.com
+            </li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
-
-const ActionButton = ({ onClick, label, className }) => (
-  <button onClick={onClick} className={`button ${className}`}>
-    {label}
-  </button>
-);
 
 export default AuthPanel;

@@ -1,1 +1,1 @@
-export {default} from './AuthPanel';
+export {default} from './AuthForm';

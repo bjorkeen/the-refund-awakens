@@ -1,19 +1,9 @@
-/* Imports */
 @import url('./styles/variables.css');
 @import url('./styles/layout.css');
-@import url('./styles/buttons.css');
-@import url('./styles/typography.css');
 
 body {
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
   background-color: var(--color-bg);
-  color: var(--color-text);
-  font-family: system-ui, -apple-system, sans-serif;
-}
-
-#root {
-  width: 100%;
-  min-height: 100vh;
+  color: var(--color-text-main);
 }

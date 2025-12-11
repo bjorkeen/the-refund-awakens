@@ -1,27 +1,16 @@
 :root {
-  /* Γενικά Χρώματα */
-  --color-bg: #242424;
-  --color-text: rgba(255, 255, 255, 0.87);
+  /* Colors based on the clean design */
+  --color-primary: #2563eb; /* Το έντονο μπλε */
+  --color-primary-hover: #1d4ed8;
   
-  /* Buttons */
-  --btn-blue: #3b82f6;
-  --btn-green: #22c55e;
-  --btn-yellow: #f59e0b;
-  --btn-purple: #a855f7;
-
-  /* Header */
-  --header-bg: #111827; /* Gray 900 */
-  --header-text: #ffffff;
+  --color-bg: #f3f4f6; /* Απαλό γκρι για το φόντο της σελίδας */
+  --color-surface: #ffffff; /* Λευκό για την κάρτα */
   
-  /* MessageBox */
-  --msg-bg: #f3f4f6;
-  --msg-border: #d1d5db;
-  --msg-text: #1f2937;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-bg: #ffffff;
-    --color-text: #213547;
-  }
+  --color-text-main: #111827;
+  --color-text-secondary: #6b7280;
+  
+  --color-border: #e5e7eb;
+  
+  --radius-md: 8px;
+  --radius-lg: 12px;
 }

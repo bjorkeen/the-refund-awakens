@@ -1,15 +1,16 @@
-import AuthPanel from "../components/AuthPanel/AuthPanel";
+import AuthPanel from '../components/AuthPanel';
 
 const HomePage = () => {
   return (
     <div className="page-container">
-      <div className="panel">
+      {/* Λογότυπο έξω από την κάρτα */}
+      <div className="logo-area">
         <h1>Electronics R&R</h1>
-        <p style={{ marginTop: "0", marginBottom: "20px", color: "#888" }}>
-          {" Returns & Repairs Management "}
-        </p>
-        <AuthPanel />
+        <p>Returns & Repairs Management</p>
       </div>
+
+      {/* Η κάρτα εισόδου */}
+      <AuthPanel />
     </div>
   );
 };
