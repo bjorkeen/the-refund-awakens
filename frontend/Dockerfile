@@ -1,16 +1,25 @@
-# Stage 1: Build
+#frontend/Dockerfile
+
+#step 1 build React
 FROM node:18-alpine as builder
 WORKDIR /app
 COPY package*.json ./
+
+#install dependecies
 RUN npm install
+
 COPY . .
+
 RUN npm run build
 
-# Stage 2: Serve
+#step 2 serve with Nginx
 FROM nginx:alpine
-# Εδώ ήταν το λάθος (.app -> /app)
-COPY --from=builder /app/dist /usr/share/nginx/html
+
+#copy files from build stage
+COPY --from=builder .app/dist /usr/share/nginx/html 
+
+#config copy
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD [ "nginx", "-g", "daemon off;" ]
