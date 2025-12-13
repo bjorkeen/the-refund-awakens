@@ -7,8 +7,7 @@ import MessageBox from "../MessageBox";
 import styles from "./AuthPanel.module.css";
 
 const AuthPanel = () => {
-  // State:  Login / Register
-  const [mode, setMode] = useState("login"); // 'login' or 'register'
+  const [mode, setMode] = useState("login");
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -16,7 +15,6 @@ const AuthPanel = () => {
   });
   const [message, setMessage] = useState("");
 
-  // Hooks
   const { login } = useAccess();
   const navigate = useNavigate();
   const isDev = import.meta.env.DEV;
@@ -28,10 +26,9 @@ const AuthPanel = () => {
     if (e) e.preventDefault();
     console.log("1. Button Clicked! Mode:", mode);
     setMessage("");
-    
+
     try {
       if (mode === "login") {
-        // Login Flow
         console.log("2. Attempting Login...");
         const user = await authService.login({
           email: form.username,
@@ -39,11 +36,10 @@ const AuthPanel = () => {
         });
 
         await login(user);
-
-        navigate("/");
+        navigate("/dashboard");
       } else {
-        // Register Flow
         console.log("2. Attempting Register...");
+        
         await authService.register({
           fullName: form.fullName,
           email: form.username,
@@ -70,17 +66,13 @@ const AuthPanel = () => {
 
         <div className={styles.tabs}>
           <button
-            className={`${styles.tab} ${
-              mode === "login" ? styles.activeTab : ""
-            }`}
+            className={`${styles.tab} ${mode === "login" ? styles.activeTab : ""}`}
             onClick={() => setMode("login")}
           >
             Sign In
           </button>
           <button
-            className={`${styles.tab} ${
-              mode === "register" ? styles.activeTab : ""
-            }`}
+            className={`${styles.tab} ${mode === "register" ? styles.activeTab : ""}`}
             onClick={() => setMode("register")}
           >
             Sign Up
@@ -88,10 +80,8 @@ const AuthPanel = () => {
         </div>
       </div>
 
-      {/* Form */}
       <div className={styles.body}>
         <AuthForm form={form} onChange={handleChange} mode={mode} onSubmit={handleSubmit} />
-        {/* Submit Button */}
         <button className={styles.submitButton} onClick={handleSubmit}>
           {mode === "login" ? "Sign In" : "Sign Up"}
         </button>
@@ -99,21 +89,13 @@ const AuthPanel = () => {
         <MessageBox message={message} />
       </div>
 
-      {/* 3. Development Only Box */}
       {isDev && (
         <div className={styles.devBox}>
           <h4>Demo Accounts:</h4>
-          <p>
-            Create your own account or use these test credentials (password:
-            demo123):
-          </p>
+          <p>Test credentials (password: demo123):</p>
           <ul>
-            <li>
-              <strong>Customer:</strong> customer@demo.com
-            </li>
-            <li>
-              <strong>Manager:</strong> manager@demo.com
-            </li>
+            <li><strong>Customer:</strong> customer@demo.com</li>
+            <li><strong>Manager:</strong> manager@demo.com</li>
           </ul>
         </div>
       )}
