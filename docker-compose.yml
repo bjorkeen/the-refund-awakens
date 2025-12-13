@@ -1,12 +1,23 @@
-version: '3.8'
-
 services:
+  mongo_db:
+    image: mongo:latest
+    container_name: my-app-mongo
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-network
+
   backend_service:
     build: ./backend
     container_name: my-app-backend
     restart: always
     environment:
       - PORT=5050
+      - USE_MONGO=true
+      - MONGO_URI=mongodb://mongo_db:27017/boilerplate
+    depends_on:
+      - mongo_db
     networks:
       - app-network
 
@@ -20,6 +31,9 @@ services:
       - backend_service
     networks:
       - app-network
+
+volumes:
+  mongo_data:
 
 networks:
   app-network:

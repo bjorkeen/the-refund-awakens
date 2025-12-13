@@ -1,7 +1,7 @@
 #frontend/Dockerfile
 
 #step 1 build React
-FROM node:18-alpine as builder
+FROM node:18-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 
@@ -16,7 +16,7 @@ RUN npm run build
 FROM nginx:alpine
 
 #copy files from build stage
-COPY --from=builder .app/dist /usr/share/nginx/html 
+COPY --from=builder ./app/dist /usr/share/nginx/html
 
 #config copy
 COPY nginx.conf /etc/nginx/conf.d/default.conf
