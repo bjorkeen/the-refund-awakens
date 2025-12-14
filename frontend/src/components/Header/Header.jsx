@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAccess } from '../../context/AccessContext';
+import styles from './Header.module.css';
 
 const Header = () => {
   const { hasAccess, logout } = useAccess();
