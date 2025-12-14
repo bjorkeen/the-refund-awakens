@@ -9,7 +9,6 @@ const mongoose = require('mongoose');
 
 // Routes
 const authRoutes = require('./routes/auth');
-const protectedRoutes = require('./routes/protected');
 const ticketRoutes = require('./routes/tickets');
 
 // App
@@ -40,7 +39,6 @@ app.get('/api/test', (req, res) => {
 
 // Auth Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/protected', protectedRoutes);
 app.use('/api/tickets', ticketRoutes);
 
 // 🌐 DB Toggle Logic

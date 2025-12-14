@@ -4,10 +4,10 @@ import AccessGate from './components/AccessGate';
 import PrivateRoute from './components/PrivateRoute';
 import HomePage from './pages/HomePage';
 import AuthPanel from './components/AuthPanel';
-import ProtectedPage from './pages/ProtectedPage';
 
 import CreateTicket from './pages/CreateTicket';
 import MyTickets from './pages/MyTickets';
+import Playground from './pages/Playground';
 
 function App() {
   return (
@@ -17,13 +17,6 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPanel />} />
-          
-          {/* Protected Routes */}
-          <Route path="/protected" element={
-            <PrivateRoute>
-              <ProtectedPage />
-            </PrivateRoute>
-          } />
           
           <Route path="/dashboard" element={
             <PrivateRoute>
@@ -36,6 +29,9 @@ function App() {
               <CreateTicket />
             </PrivateRoute>
           } />
+          
+          {/* DEVELOPMENT ONLY ROUTE */}
+          <Route path="/test" element={<Playground />} />
           
         </Routes>
       </AccessGate>
