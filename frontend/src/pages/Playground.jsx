@@ -3,6 +3,8 @@ import React from 'react';
 // Αυτή είναι η σελίδα δοκιμών για τους Developers.
 // Κάντε import εδώ τα components σας για να τα τεστάρετε.
 
+import AppBar from "../components/AppBar";
+
 export default function Playground() {
   return (
     <div style={{ padding: '40px', minHeight: '100vh', backgroundColor: '#f4f4f5' }}>
@@ -22,6 +24,13 @@ export default function Playground() {
       
       <div style={{ border: '2px dashed #ccc', padding: '20px', borderRadius: '8px' }}>
         <h3>Test Area</h3>
+        
+        {/* Test AppBar */}
+        <div style={{ border: '1px solid red', padding: '10px', margin: '10px 0' }}>
+          <p>AppBar should render here:</p>
+          <AppBar />
+          {/* Routes are handled by the main app router */}
+        </div>
         
         {/* <Header /> */}
         {/* <Footer /> */}
