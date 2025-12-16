@@ -24,6 +24,12 @@ function App() {
             </PrivateRoute>
           } />
 
+          <Route path="/requests" element={
+            <PrivateRoute>
+              <MyTickets />
+            </PrivateRoute>
+          } />
+
           <Route path="/create-ticket" element={
             <PrivateRoute>
               <CreateTicket />
