@@ -4,6 +4,7 @@ import AccessGate from './components/AccessGate';
 import PrivateRoute from './components/PrivateRoute';
 import HomePage from './pages/HomePage';
 import AuthPanel from './components/AuthPanel';
+import Dashboard from './pages/Dashboard';
 
 import CreateTicket from './pages/CreateTicket';
 import MyTickets from './pages/MyTickets';
@@ -17,12 +18,8 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPanel />} />
-          
-          <Route path="/dashboard" element={
-            <PrivateRoute>
-              <MyTickets />
-            </PrivateRoute>
-          } />
+          <Route path="/dashboard" element={<Dashboard />} />
+             
 
           <Route path="/requests" element={
             <PrivateRoute>
