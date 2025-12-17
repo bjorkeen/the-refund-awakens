@@ -9,6 +9,8 @@ import CreateTicket from './pages/CreateTicket';
 import MyTickets from './pages/MyTickets';
 import Playground from './pages/Playground';
 
+import Footer from './components/Footer/Footer';
+
 function App() {
   return (
     <>
@@ -41,6 +43,8 @@ function App() {
           
         </Routes>
       </AccessGate>
+          {/* Footer always visible */}
+      <Footer />
     </>
   );
 }
