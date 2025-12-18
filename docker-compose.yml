@@ -15,7 +15,9 @@ services:
     environment:
       - PORT=5050
       - USE_MONGO=true
-      - MONGO_URI=mongodb://mongo_db:27017/boilerplate
+      - MONGO_URI=${MONGO_URI}
+    ports:
+      - "5050:5050"    
     depends_on:
       - mongo_db
     networks:

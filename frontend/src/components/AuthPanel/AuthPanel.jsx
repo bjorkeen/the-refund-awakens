@@ -29,17 +29,19 @@ const AuthPanel = () => {
 
     try {
       if (mode === "login") {
-        console.log("2. Attempting Login...");
-        const user = await authService.login({
+        const response = await authService.login({
           email: form.username,
           password: form.password
         });
-
-        await login(user);
-        navigate("/dashboard");
-      } else {
-        console.log("2. Attempting Register...");
         
+        if (response.user) {
+            await login(response.user);
+            navigate("/dashboard");
+        } else {
+            setMessage("Login failed: Invalid server response");
+        }
+
+      } else {
         await authService.register({
           fullName: form.fullName,
           email: form.username,
@@ -92,10 +94,14 @@ const AuthPanel = () => {
       {isDev && (
         <div className={styles.devBox}>
           <h4>Demo Accounts:</h4>
-          <p>Test credentials (password: demo123):</p>
+          <p>Test credentials (password: demo123!):</p>
           <ul>
-            <li><strong>Customer:</strong> customer@demo.com</li>
+           <ul>
             <li><strong>Manager:</strong> manager@demo.com</li>
+            <li><strong>Employee:</strong> staff@demo.com</li>
+            <li><strong>Technician</strong>tech@demo.com</li>
+            <li><strong>Customer:</strong> customer@demo.com</li>
+          </ul>
           </ul>
         </div>
       )}
