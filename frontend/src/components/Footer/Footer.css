@@ -1,55 +1,375 @@
+/* --- Footer hero section --- */
+
 .footer {
   width: 100%;
-  padding: 10px;
-  background-color: #2563eb;
-  color: white;
+  background-color: #2563eb; /* blue background */
+  color: #f9fafb;
+  padding: 24px 16px 18px; /* smaller than before */
+}
+
+.footer-inner {
+  max-width: 960px;
+  margin: 0 auto;
   text-align: center;
 }
 
-.policy-link {
-  background: none;
+.footer-title {
+  margin: 0;
+  font-size: 26px; /* was 32px */
+  font-weight: 600;
+}
+
+.footer-subtitle {
+  margin: 8px auto 16px; /* tighter */
+  max-width: 600px;
+  font-size: 13px;       /* slightly smaller */
+  line-height: 1.5;
+  color: #e0ecff;
+}
+
+/* Buttons */
+
+.footer-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;              /* smaller gap */
+  align-items: center;
+  margin-bottom: 20px;   /* less vertical space */
+}
+
+.footer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
   border: none;
-  color: #4db8ff;
+  padding: 5px 14px;     /* slightly smaller buttons */
+  font-size: 13px;
   cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
+  white-space: nowrap;
+}
+
+.footer-btn-emoji {
   font-size: 14px;
 }
 
-.policy-link:hover {
-  text-decoration: underline;
+.footer-btn.primary {
+  background-color: #f9fafb;
+  color: #111827;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.25);
 }
 
-/* Modal styles */
+.footer-btn.primary:hover {
+  transform: translateY(-1px);
+  background-color: #e5e7eb;
+}
+
+.footer-btn.secondary {
+  background-color: #f9fafb;
+  color: #111827;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.18);
+}
+
+.footer-btn.secondary:hover {
+  transform: translateY(-1px);
+  background-color: #e5e7eb;
+}
+
+/* Divider & bottom row */
+
+.footer-divider {
+  border: none;
+  border-top: 1px solid rgba(239, 246, 255, 0.4);
+  margin: 18px 0 12px;  /* tighter */
+}
+
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.footer-copy {
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+/* Social buttons */
+
+.footer-social {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.social-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(239, 246, 255, 0.7);
+  background-color: transparent;
+  color: #f9fafb;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.social-btn:hover {
+  background-color: rgba(37, 99, 235, 0.15);
+}
+
+/* Small screens: center everything */
+
+@media (max-width: 640px) {
+  .footer-bottom {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .footer-social {
+    margin-left: 0;
+  }
+}
+
+/* --- Modal overlay + container --- */
+
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 40;
 }
 
 .modal-content {
-  background: white;
-  width: 400px;
-  max-width: 90%;
-  padding: 20px;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  width: 900px;
+  max-width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px 28px;
+  box-shadow: 0 20px 35px rgba(15, 23, 42, 0.25);
+}
+
+/* --- Policy layout --- */
+
+.policy-page {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #111827;
+}
+
+.policy-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.policy-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* --- Cards --- */
+
+.policy-card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 8px rgba(148, 163, 184, 0.15);
+}
+
+.policy-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.policy-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background-color: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.policy-card-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.policy-card-caption {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.policy-pill {
+  margin-left: auto;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background-color: #e0f2fe;
+  color: #0369a1;
+  font-weight: 500;
+}
+
+.policy-body h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 10px 0 4px;
+}
+
+.policy-body p {
+  font-size: 13px;
+  color: #374151;
+  margin: 4px 0 6px;
+}
+
+.policy-body ul {
+  padding-left: 18px;
+  margin: 4px 0 8px;
+}
+
+.policy-body li {
+  font-size: 13px;
+  color: #4b5563;
+  margin-bottom: 3px;
+}
+
+/* --- Tip / Info boxes --- */
+
+.policy-tip {
+  margin-top: 10px;
+  padding: 10px 12px;
   border-radius: 8px;
-  text-align: left;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.policy-tip-info {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.policy-tip-warning {
+  background-color: #fffbeb;
+  border: 1px solid #facc15;
+}
+
+.tip-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+}
+
+/* --- Columns for covered / not covered --- */
+
+.policy-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.policy-box {
+  flex: 1 1 220px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.policy-box h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.policy-box ul {
+  margin: 0;
+}
+
+.policy-box-green {
+  background-color: #ecfdf3;
+  border: 1px solid #bbf7d0;
+}
+
+.policy-box-red {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+/* --- Contact modal layout --- */
+
+.contact-modal {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #111827;
+}
+
+.contact-modal-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.contact-modal-line {
+  display: flex;
+  gap: 10px;
+}
+
+.contact-modal-label {
+  min-width: 60px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.contact-modal-value {
+  color: #374151;
+}
+
+/* --- Actions --- */
+
+.policy-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 
 .close-btn {
-  background-color: #1f1f1f;
-  color: white;
-  padding: 8px 12px;
+  background-color: #111827;
+  color: #f9fafb;
+  padding: 8px 14px;
   border: none;
-  margin-top: 15px;
+  border-radius: 8px;
+  font-size: 13px;
   cursor: pointer;
-  border-radius: 5px;
 }
 
 .close-btn:hover {
-  background-color: #333;
+  background-color: #1f2937;
 }
