@@ -41,7 +41,7 @@ app.get('/api/test', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 
-// 🌐 DB Toggle Logic
+//  DB Toggle Logic
 const PORT = process.env.PORT || 5050;
 const useMongo = process.env.USE_MONGO === 'true';
 
@@ -49,16 +49,16 @@ const useMongo = process.env.USE_MONGO === 'true';
 if (useMongo) {
   mongoose.connect(process.env.MONGO_URI)
     .then(() => {
-      console.log('✅ Connected to MongoDB');
+      console.log('Connected to MongoDB');
       app.listen(PORT, () => {
-        console.log(`🚀 Server (MongoDB) running on http://localhost:${PORT}`);
+        console.log(`Server (MongoDB) running on http://localhost:${PORT}`);
       });
     })
     .catch((err) => {
-      console.error('❌ MongoDB connection error:', err);
+      console.error('MongoDB connection error:', err);
     });
 } else {
   app.listen(PORT, () => {
-    console.log(`🚀 Server (In-Memory) running on http://localhost:${PORT}`);
+    console.log(`Server (In-Memory) running on http://localhost:${PORT}`);
   });
 }
