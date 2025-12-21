@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { createTicket } from "../services/ticketService";
 import "./CreateTicket.css";
 
+const PRODUCT_TYPES = ["Smartphone", "Laptop", "TV", "Other"];
+
 const CATEGORIES = [
   "Screen / Display",
   "Battery / Charging",
@@ -21,19 +23,22 @@ export default function CreateTicket() {
     serialNumber: "",
     model: "",
     purchaseDate: "",
+    type: "",          // REQUIRED by backend
     category: "",
     description: "",
   });
 
-  const [invoiceFile, setInvoiceFile] = useState(null);
-  const [photoFiles, setPhotoFiles] = useState([]);
+  const [invoiceFile, setInvoiceFile] = useState(null); // optional (not sent to backend yet)
+  const [photoFiles, setPhotoFiles] = useState([]);     // optional (we send filenames)
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const isValid = useMemo(() => {
     return (
       formData.serialNumber.trim().length > 0 &&
+      formData.model.trim().length > 0 &&            // backend requires model
       formData.purchaseDate.trim().length > 0 &&
+      formData.type.trim().length > 0 &&             // backend requires type
       formData.category.trim().length > 0 &&
       formData.description.trim().length >= 10
     );
@@ -65,9 +70,7 @@ export default function CreateTicket() {
     alert("Draft saved locally.");
   };
 
-  const handleCancel = () => {
-    navigate(-1);
-  };
+  const handleCancel = () => navigate(-1);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,19 +84,22 @@ export default function CreateTicket() {
     try {
       setSubmitting(true);
 
-      // IMPORTANT:
-      // Your backend currently expects JSON, not file uploads.
-      // So we only send metadata for now (names), until you implement multipart upload later.
+      // ✅ IMPORTANT: send FLAT payload (matches backend controller)
       const payload = {
-        ...formData,
-        invoiceFileName: invoiceFile?.name || null,
-        photoFileNames: photoFiles.map((f) => f.name),
+        serialNumber: formData.serialNumber.trim(),
+        model: formData.model.trim(),
+        purchaseDate: formData.purchaseDate, // ISO date string is OK
+        type: formData.type,
+        category: formData.category,
+        description: formData.description.trim(),
+        photos: photoFiles.map((f) => f.name), // backend expects "photos"
+        // invoice not used in backend yet → we keep it local for now
       };
 
       await createTicket(payload);
       navigate("/dashboard");
     } catch (err) {
-      setError(typeof err === "string" ? err : "Failed to create ticket.");
+      setError(typeof err === "string" ? err : "Server error while creating ticket.");
     } finally {
       setSubmitting(false);
     }
@@ -104,7 +110,9 @@ export default function CreateTicket() {
       <div className="ct-card">
         <div className="ct-header">
           <h1 className="ct-title">Create New Request</h1>
-          <p className="ct-subtitle">Submit a repair or return request for your product</p>
+          <p className="ct-subtitle">
+            Submit a repair or return request for your product
+          </p>
         </div>
 
         {error && <div className="ct-alert">{error}</div>}
@@ -133,13 +141,16 @@ export default function CreateTicket() {
 
             <div className="ct-grid">
               <div className="ct-field">
-                <label className="ct-label">Product Model (Optional)</label>
+                <label className="ct-label">
+                  Product Model <span className="ct-required">*</span>
+                </label>
                 <input
                   className="ct-input"
                   name="model"
                   value={formData.model}
                   onChange={handleChange}
                   placeholder="e.g., iPhone 14 Pro, MacBook Pro 2021"
+                  required
                 />
               </div>
 
@@ -159,6 +170,26 @@ export default function CreateTicket() {
             </div>
 
             <div className="ct-field">
+              <label className="ct-label">
+                Product Type <span className="ct-required">*</span>
+              </label>
+              <select
+                className="ct-select"
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select product type</option>
+                {PRODUCT_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="ct-field">
               <label className="ct-label">Upload Invoice (Optional)</label>
 
               <label className="ct-dropzone">
@@ -171,7 +202,9 @@ export default function CreateTicket() {
                 <div className="ct-dropzone-inner">
                   <div className="ct-upload-icon">⬆</div>
                   <div className="ct-dropzone-text">
-                    <div className="ct-dropzone-strong">Click to upload or drag and drop</div>
+                    <div className="ct-dropzone-strong">
+                      Click to upload or drag and drop
+                    </div>
                     <div className="ct-dropzone-muted">PDF, JPG, PNG up to 10MB</div>
                   </div>
                 </div>
@@ -255,11 +288,7 @@ export default function CreateTicket() {
 
           {/* Actions */}
           <div className="ct-actions">
-            <button
-              type="button"
-              className="ct-btn ct-btn-ghost"
-              onClick={handleSaveDraft}
-            >
+            <button type="button" className="ct-btn ct-btn-ghost" onClick={handleSaveDraft}>
               Save Draft
             </button>
 
