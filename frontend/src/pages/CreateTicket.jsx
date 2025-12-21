@@ -1,124 +1,284 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createTicket } from '../services/ticketService';
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createTicket } from "../services/ticketService";
+import "./CreateTicket.css";
+
+const CATEGORIES = [
+  "Screen / Display",
+  "Battery / Charging",
+  "Audio / Speaker",
+  "Camera",
+  "Connectivity (Wi-Fi / Bluetooth)",
+  "Software / Performance",
+  "Physical Damage",
+  "Other",
+];
 
 export default function CreateTicket() {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    serialNumber: '',
-    model: '',
-    purchaseDate: '',
-    type: 'Smartphone', // Default για το dropdown
-    category: '',
-    description: ''
+    serialNumber: "",
+    model: "",
+    purchaseDate: "",
+    category: "",
+    description: "",
   });
-  const [error, setError] = useState('');
+
+  const [invoiceFile, setInvoiceFile] = useState(null);
+  const [photoFiles, setPhotoFiles] = useState([]);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const isValid = useMemo(() => {
+    return (
+      formData.serialNumber.trim().length > 0 &&
+      formData.purchaseDate.trim().length > 0 &&
+      formData.category.trim().length > 0 &&
+      formData.description.trim().length >= 10
+    );
+  }, [formData]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onInvoiceChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setInvoiceFile(file);
+  };
+
+  const onPhotosChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    setPhotoFiles(files);
+  };
+
+  const handleSaveDraft = () => {
+    const draft = {
+      formData,
+      invoiceFileName: invoiceFile?.name || null,
+      photoFileNames: photoFiles.map((f) => f.name),
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem("createTicketDraft", JSON.stringify(draft));
+    alert("Draft saved locally.");
+  };
+
+  const handleCancel = () => {
+    navigate(-1);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    if (!isValid) {
+      setError("Please fill all required fields. Description must be at least 10 characters.");
+      return;
+    }
+
     try {
-      await createTicket(formData);
-      navigate('/dashboard'); // Μετά την επιτυχία, πήγαινε στη λίστα
+      setSubmitting(true);
+
+      // IMPORTANT:
+      // Your backend currently expects JSON, not file uploads.
+      // So we only send metadata for now (names), until you implement multipart upload later.
+      const payload = {
+        ...formData,
+        invoiceFileName: invoiceFile?.name || null,
+        photoFileNames: photoFiles.map((f) => f.name),
+      };
+
+      await createTicket(payload);
+      navigate("/dashboard");
     } catch (err) {
-      setError(err);
+      setError(typeof err === "string" ? err : "Failed to create ticket.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Create New Request</h2>
-      
-      {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Product Details Section */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Serial Number</label>
-            <input
-              name="serialNumber"
-              type="text"
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2"
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Model</label>
-            <input
-              name="model"
-              type="text"
-              required
-              placeholder="e.g. iPhone 14"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2"
-              onChange={handleChange}
-            />
-          </div>
+    <div className="ct-page">
+      <div className="ct-card">
+        <div className="ct-header">
+          <h1 className="ct-title">Create New Request</h1>
+          <p className="ct-subtitle">Submit a repair or return request for your product</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Purchase Date</label>
-            <input
-              name="purchaseDate"
-              type="date"
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2"
-              onChange={handleChange}
-            />
-            <p className="text-xs text-gray-500 mt-1">Used for warranty validation</p>
+        {error && <div className="ct-alert">{error}</div>}
+
+        <form onSubmit={handleSubmit} className="ct-form">
+          {/* Product Information */}
+          <div className="ct-section">
+            <h2 className="ct-section-title">Product Information</h2>
+
+            <div className="ct-field">
+              <label className="ct-label">
+                Product Serial Number <span className="ct-required">*</span>
+              </label>
+              <input
+                className="ct-input"
+                name="serialNumber"
+                value={formData.serialNumber}
+                onChange={handleChange}
+                placeholder="e.g., SN123456789"
+                required
+              />
+              <p className="ct-help">
+                Serial number can be found on the product label or original packaging.
+              </p>
+            </div>
+
+            <div className="ct-grid">
+              <div className="ct-field">
+                <label className="ct-label">Product Model (Optional)</label>
+                <input
+                  className="ct-input"
+                  name="model"
+                  value={formData.model}
+                  onChange={handleChange}
+                  placeholder="e.g., iPhone 14 Pro, MacBook Pro 2021"
+                />
+              </div>
+
+              <div className="ct-field">
+                <label className="ct-label">
+                  Purchase Date <span className="ct-required">*</span>
+                </label>
+                <input
+                  className="ct-input"
+                  type="date"
+                  name="purchaseDate"
+                  value={formData.purchaseDate}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="ct-field">
+              <label className="ct-label">Upload Invoice (Optional)</label>
+
+              <label className="ct-dropzone">
+                <input
+                  className="ct-file"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={onInvoiceChange}
+                />
+                <div className="ct-dropzone-inner">
+                  <div className="ct-upload-icon">⬆</div>
+                  <div className="ct-dropzone-text">
+                    <div className="ct-dropzone-strong">Click to upload or drag and drop</div>
+                    <div className="ct-dropzone-muted">PDF, JPG, PNG up to 10MB</div>
+                  </div>
+                </div>
+              </label>
+
+              {invoiceFile && (
+                <p className="ct-file-selected">
+                  Selected invoice: <strong>{invoiceFile.name}</strong>
+                </p>
+              )}
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Device Type</label>
-            <select
-              name="type"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2"
-              onChange={handleChange}
-              value={formData.type}
+
+          {/* Issue Details */}
+          <div className="ct-section">
+            <h2 className="ct-section-title">Issue Details</h2>
+
+            <div className="ct-field">
+              <label className="ct-label">
+                Problem Category <span className="ct-required">*</span>
+              </label>
+              <select
+                className="ct-select"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select a category</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="ct-field">
+              <label className="ct-label">
+                Issue Description <span className="ct-required">*</span>
+              </label>
+              <textarea
+                className="ct-textarea"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="Please describe the issue in detail..."
+                required
+              />
+              <p className="ct-help">Minimum 10 characters. Be as specific as possible.</p>
+            </div>
+
+            <div className="ct-field">
+              <label className="ct-label">Upload Photos (Optional)</label>
+
+              <label className="ct-dropzone">
+                <input
+                  className="ct-file"
+                  type="file"
+                  accept=".jpg,.jpeg,.png"
+                  multiple
+                  onChange={onPhotosChange}
+                />
+                <div className="ct-dropzone-inner">
+                  <div className="ct-upload-icon">⬆</div>
+                  <div className="ct-dropzone-text">
+                    <div className="ct-dropzone-strong">Click to upload photos</div>
+                    <div className="ct-dropzone-muted">JPG, PNG up to 5MB each</div>
+                  </div>
+                </div>
+              </label>
+
+              {photoFiles.length > 0 && (
+                <p className="ct-file-selected">
+                  Selected photos:{" "}
+                  <strong>{photoFiles.map((f) => f.name).join(", ")}</strong>
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="ct-actions">
+            <button
+              type="button"
+              className="ct-btn ct-btn-ghost"
+              onClick={handleSaveDraft}
             >
-              <option value="Smartphone">Smartphone</option>
-              <option value="Laptop">Laptop</option>
-              <option value="TV">TV</option>
-              <option value="Other">Other</option>
-            </select>
+              Save Draft
+            </button>
+
+            <div className="ct-actions-right">
+              <button type="button" className="ct-btn ct-btn-secondary" onClick={handleCancel}>
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="ct-btn ct-btn-primary"
+                disabled={!isValid || submitting}
+              >
+                {submitting ? "Submitting..." : "Submit Request"}
+              </button>
+            </div>
           </div>
-        </div>
-
-        {/* Issue Details Section */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Problem Category</label>
-          <input
-            name="category"
-            type="text"
-            required
-            placeholder="e.g. Screen Damage"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2"
-            onChange={handleChange}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea
-            name="description"
-            rows="3"
-            required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2"
-            onChange={handleChange}
-          ></textarea>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Submit Request
-        </button>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

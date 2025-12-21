@@ -17,7 +17,7 @@ export const logout = async () => {
 
 
 export const checkAccess = () =>
-  api.get('/protected/hasAccess');
+  api.get('/auth/me');
 
 export const testApi = () =>
   api.get('/test');
