@@ -17,7 +17,7 @@ services:
       - USE_MONGO=true
       - MONGO_URI=${MONGO_URI}
     ports:
-      - "5050:5050"    
+      - "5050:5050"
     depends_on:
       - mongo_db
     networks:
