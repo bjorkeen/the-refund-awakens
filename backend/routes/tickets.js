@@ -9,5 +9,7 @@ router.post('/', requireAuth, ticketController.createTicket);
 // GET /api/tickets - Get user's ticket (Protected)
 router.get('/', requireAuth, ticketController.getMyTickets);
 
+// GET /api/tickets/assigned - Get assigned tickets (Protected)
+router.get('/assigned', requireAuth, ticketController.getAssignedTickets);
 
 module.exports = router;

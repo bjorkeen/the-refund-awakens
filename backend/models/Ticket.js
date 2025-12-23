@@ -56,7 +56,8 @@ const ticketSchema = new mongoose.Schema({
   },
   
   assignedRepairCenter: {
-    type: String, // e.g., "Repair Center A" [cite: 3214]
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     default: null
   },
 

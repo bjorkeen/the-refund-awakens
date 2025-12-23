@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   fullName: {
@@ -20,8 +20,13 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['Customer', 'Employee', 'Technician', 'Manager'],
+    enum: ['Customer', 'Employee', 'Technician', 'Manager', 'Admin'],
     default: 'Customer'
+  },
+  specialty: {
+    type: String,
+    enum: ['Smartphone', 'Laptop', 'TV', 'Other', null],
+    default: null
   },
   createdAt: {
     type: Date,

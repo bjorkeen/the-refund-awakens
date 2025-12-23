@@ -24,3 +24,9 @@ export const getMyTickets = async () => {
     throw error.response?.data?.message || 'Failed to fetch tickets';
   }
 };
+
+// Get tickets assigned to the logged-in technician
+export const getAssignedTickets = async () => {
+  const response = await api.get('/tickets/assigned');
+  return response.data;
+};
