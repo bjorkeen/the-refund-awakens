@@ -1,0 +1,103 @@
+.tech-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tech-header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tech-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.tech-subtitle {
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+/* Stats Cards */
+.tech-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.tech-stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.tech-stat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.tech-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Table */
+.tech-table-container {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.tech-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tech-table th {
+  background: #f9fafb;
+  padding: 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #374151;
+  font-weight: 700;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tech-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  color: #4b5563;
+  vertical-align: middle;
+}
+
+.tech-select {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background-color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.tech-select:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.badge-submitted { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600;}
+.badge-progress { background: #fef3c7; color: #b45309; padding: 4px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600;}
+.badge-completed { background: #dcfce7; color: #15803d; padding: 4px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600;}

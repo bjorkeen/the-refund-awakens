@@ -30,3 +30,17 @@ export const getAssignedTickets = async () => {
   const response = await api.get('/tickets/assigned');
   return response.data;
 };
+
+// Update ticket status
+export const updateTicketStatus = async (ticketId, status) => {
+  const token = localStorage.getItem('token'); // Ή cookie αν το έχεις ρυθμίσει αλλιώς
+  const response = await fetch(`${API_URL}/${ticketId}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ status }),
+  });
+  return response.json();
+};
