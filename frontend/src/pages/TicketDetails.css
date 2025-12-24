@@ -1,0 +1,125 @@
+.td-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.td-back-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 20px;
+}
+.td-back-btn:hover { color: #111827; text-decoration: underline; }
+
+.td-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.td-header {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: #f9fafb;
+}
+
+.td-title h1 { margin: 0; font-size: 24px; color: #111827; }
+.td-id { color: #6b7280; font-family: monospace; font-size: 14px; margin-top: 4px; }
+
+/* Timeline Styles */
+.td-timeline {
+  display: flex;
+  justify-content: space-between;
+  padding: 30px 40px;
+  position: relative;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.td-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  width: 100px;
+}
+
+.td-step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 8px;
+  border: 2px solid white;
+}
+
+.td-step.active .td-step-circle { background: #2563eb; color: white; }
+.td-step.completed .td-step-circle { background: #059669; color: white; }
+
+.td-step-label { font-size: 12px; font-weight: 600; color: #6b7280; text-align: center; }
+.td-step.active .td-step-label { color: #2563eb; }
+.td-step.completed .td-step-label { color: #059669; }
+
+/* Progress Bar Line */
+.td-progress-bar {
+  position: absolute;
+  top: 45px; /* Adjust to align with circles */
+  left: 80px;
+  right: 80px;
+  height: 2px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+.td-progress-fill {
+  height: 100%;
+  background: #059669;
+  transition: width 0.3s ease;
+}
+
+/* Layout Grid */
+.td-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0;
+}
+@media(max-width: 768px) { .td-grid { grid-template-columns: 1fr; } }
+
+.td-main { padding: 30px; }
+.td-sidebar { padding: 30px; background: #f9fafb; border-left: 1px solid #e5e7eb; }
+
+.td-section { margin-bottom: 30px; }
+.td-section-title { font-size: 14px; font-weight: 700; color: #374151; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.td-text { font-size: 15px; line-height: 1.6; color: #4b5563; }
+
+/* Technician Controls */
+.td-tech-box {
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  padding: 20px;
+  border-radius: 8px;
+}
+.td-tech-select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #93c5fd;
+  margin-top: 10px;
+}

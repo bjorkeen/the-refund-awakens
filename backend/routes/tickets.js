@@ -15,4 +15,6 @@ router.get('/assigned', requireAuth, ticketController.getAssignedTickets);
 // PUT /api/tickets/:id/status - Update ticket status (Technician only)
 router.put('/:id/status', requireAuth, ticketController.updateTicketStatus);
 
+// GET /api/tickets/:id - Get Single Ticket
+router.get('/:id', requireAuth, ticketController.getTicketById);
 module.exports = router;

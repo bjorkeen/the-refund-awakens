@@ -139,13 +139,11 @@ const TechnicianDashboard = () => {
                     </div>
                   </td>
                   <td>
-                    {/* Χρήση της helper function για το χρώμα */}
                     <span className={getStatusBadgeClass(ticket.status)}>
                       {ticket.status}
                     </span>
                   </td>
                   <td>
-                    {/* Το πλήρες Dropdown με ΟΛΕΣ τις επιλογές */}
                     <select
                       className="tech-select"
                       value={ticket.status}
@@ -176,9 +174,7 @@ const TechnicianDashboard = () => {
                         cursor: "pointer",
                         textDecoration: "underline",
                       }}
-                      onClick={() =>
-                        alert(`Details for ${ticket.ticketId} coming soon!`)
-                      }
+                      onClick={() => navigate(`/tickets/${ticket._id}`)}
                     >
                       View Details
                     </button>

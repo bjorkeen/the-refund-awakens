@@ -48,3 +48,22 @@ export const updateTicketStatus = async (ticketId, status) => {
 
   return response.json();
 };
+
+
+// ...
+export const getTicket = async (id) => {
+  const token = localStorage.getItem('token');
+  
+  const response = await fetch(`/api/tickets/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch ticket');
+  }
+  return response.json();
+};

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./CustomerDashboard.css";
-
 import { getMyTickets } from "@/services/ticketService";
 
-
+// --- (Helper Functions) ---
 function formatDateTime(value) {
   if (!value) return "-";
   const d = new Date(value);
@@ -14,12 +14,10 @@ function formatDateTime(value) {
 function normalizeStatus(raw) {
   if (!raw) return "Unknown";
   const s = String(raw).toLowerCase();
-
   if (s.includes("new") || s.includes("submitted")) return "Submitted";
   if (s.includes("progress")) return "In Progress";
   if (s.includes("complete") || s.includes("resolved")) return "Completed";
   if (s.includes("cancel") || s.includes("reject")) return "Cancelled";
-
   return String(raw).charAt(0).toUpperCase() + String(raw).slice(1);
 }
 
@@ -52,8 +50,10 @@ function getLastUpdate(t) {
   return t.updatedAt || t.lastUpdatedAt || t.createdAt || null;
 }
 
-
-export default function MyTickets() {
+// --- Main Component ---
+export default function CustomerDashboard() {
+  const navigate = useNavigate();
+  
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
@@ -65,14 +65,12 @@ export default function MyTickets() {
 
   useEffect(() => {
     let alive = true;
-
     const load = async () => {
       try {
         setLoading(true);
         setErrorMsg("");
-
         const data = await getMyTickets();
-
+        
         const list = Array.isArray(data)
           ? data
           : Array.isArray(data?.tickets)
@@ -82,7 +80,6 @@ export default function MyTickets() {
           : [];
 
         if (alive) setTickets(list);
-      // eslint-disable-next-line no-unused-vars
       } catch (err) {
         if (alive) {
           setTickets([]);
@@ -92,63 +89,60 @@ export default function MyTickets() {
         if (alive) setLoading(false);
       }
     };
-
     load();
-
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, []);
 
   const availableStatuses = useMemo(() => {
-    const set = new Set(tickets.map((t) => normalizeStatus(t.status || t.state)));
+    const set = new Set(
+      tickets.map((t) => normalizeStatus(t.status || t.state))
+    );
     return ["All", ...Array.from(set)];
   }, [tickets]);
 
   const filteredTickets = useMemo(() => {
     const q = query.trim().toLowerCase();
-
     const from = dateFrom ? new Date(dateFrom) : null;
     const to = dateTo ? new Date(dateTo) : null;
-    if (to) to.setHours(23, 59, 59, 999); 
+    if (to) to.setHours(23, 59, 59, 999);
 
     return tickets.filter((t) => {
       const id = getTicketId(t);
       const serial = getSerial(t);
       const model = getModel(t);
 
-      // search
+      // Filter: Search
       if (q) {
         const hay = `${id} ${serial} ${model}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
 
-      // status
+      // Filter: Status
       const statusLabel = normalizeStatus(t.status || t.state);
       if (statusFilter !== "All" && statusLabel !== statusFilter) return false;
 
-      // date range
+      // Filter: Date Range
       if (from || to) {
         const d = getLastUpdate(t) ? new Date(getLastUpdate(t)) : null;
         if (!d || Number.isNaN(d.getTime())) return false;
         if (from && d < from) return false;
         if (to && d > to) return false;
       }
-
       return true;
     });
   }, [tickets, query, statusFilter, dateFrom, dateTo]);
 
-  const onViewDetails = (ticket) => {
-    const id = getTicketId(ticket);
-    alert(`Ticket details page not implemented yet.\nTicket: ${id}`);
+  const onViewDetails = (t) => {
+    navigate(`/tickets/${t._id}`);
   };
 
   return (
     <div className="mt-page">
       <div className="mt-container">
         <h1 className="mt-title">My Requests</h1>
-        <p className="mt-subtitle">View and track all your repair and return requests</p>
+        <p className="mt-subtitle">
+          View and track all your repair and return requests
+        </p>
 
         {/* Filters Card */}
         <div className="mt-filters">
@@ -202,11 +196,7 @@ export default function MyTickets() {
         {/* Table Card */}
         <div className="mt-tablecard">
           {loading && <div className="mt-state">Loading tickets…</div>}
-
-          {!loading && errorMsg && (
-            <div className="mt-state mt-error">{errorMsg}</div>
-          )}
-
+          {!loading && errorMsg && <div className="mt-state mt-error">{errorMsg}</div>}
           {!loading && !errorMsg && filteredTickets.length === 0 && (
             <div className="mt-state">No tickets found.</div>
           )}
@@ -223,7 +213,6 @@ export default function MyTickets() {
                   <th className="mt-actions-col">Actions</th>
                 </tr>
               </thead>
-
               <tbody>
                 {filteredTickets.map((t) => {
                   const id = getTicketId(t);
@@ -236,24 +225,24 @@ export default function MyTickets() {
                   return (
                     <tr key={id}>
                       <td className="mt-mono">{id}</td>
-
                       <td>
                         <div className="mt-product">
                           <div className="mt-product-model">{model}</div>
                           <div className="mt-product-serial">{serial}</div>
                         </div>
                       </td>
-
                       <td>{issue}</td>
-
                       <td>
-                        <span className={statusClass(statusLabel)}>{statusLabel}</span>
+                        <span className={statusClass(statusLabel)}>
+                          {statusLabel}
+                        </span>
                       </td>
-
                       <td className="mt-datetime">{formatDateTime(last)}</td>
-
                       <td className="mt-actions-col">
-                        <button className="mt-link" onClick={() => onViewDetails(t)}>
+                        <button
+                          className="mt-link"
+                          onClick={() => onViewDetails(t)}
+                        >
                           View Details
                         </button>
                       </td>

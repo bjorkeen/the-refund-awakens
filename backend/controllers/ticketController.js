@@ -156,3 +156,25 @@ exports.updateTicketStatus = async (req, res) => {
     res.status(500).json({ message: 'Server error updating status' });
   }
 };
+
+// Get Single Ticket by ID
+exports.getTicketById = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id)
+      .populate('customer', 'fullName email')
+      .populate('assignedRepairCenter', 'fullName');
+
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    if (req.user.role === 'Customer' && ticket.customer._id.toString() !== req.user.userId) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    res.json(ticket);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
