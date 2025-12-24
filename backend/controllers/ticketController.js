@@ -134,3 +134,25 @@ exports.getAssignedTickets = async (req, res) => {
     res.status(500).json({ message: 'Error fetching assigned tickets' });
   }
 };
+
+// Update Ticket Status (Technician)
+exports.updateTicketStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    
+    // find ticket
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: 'Ticket not found' });
+    }
+
+    // update the status
+    ticket.status = status;
+    await ticket.save();
+
+    res.json(ticket);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error updating status' });
+  }
+};

@@ -98,6 +98,66 @@
   outline: none;
 }
 
-.badge-submitted { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600;}
-.badge-progress { background: #fef3c7; color: #b45309; padding: 4px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600;}
-.badge-completed { background: #dcfce7; color: #15803d; padding: 4px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600;}
+.badge-submitted {
+  background: #e0f2fe;
+  color: #0369a1; /* Μπλε ανοιχτό */
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-pending {
+  background: #f3e8ff;
+  color: #7e22ce; /* Μωβ */
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-progress {
+  background: #fef3c7;
+  color: #b45309; /* Κίτρινο/Πορτοκαλί */
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-waiting {
+  background: #ffedd5;
+  color: #c2410c; /* Πιο έντονο Πορτοκαλί */
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-completed {
+  background: #dcfce7;
+  color: #15803d; /* Πράσινο */
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-closed {
+  background: #374151;
+  color: #f9fafb; /* Σκούρο Γκρι */
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-cancelled {
+  background: #f3f4f6;
+  color: #6b7280; /* Ανοιχτό Γκρι */
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: line-through;
+}

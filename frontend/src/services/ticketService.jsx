@@ -33,14 +33,18 @@ export const getAssignedTickets = async () => {
 
 // Update ticket status
 export const updateTicketStatus = async (ticketId, status) => {
-  const token = localStorage.getItem('token'); // Ή cookie αν το έχεις ρυθμίσει αλλιώς
-  const response = await fetch(`${API_URL}/${ticketId}/status`, {
+  const response = await fetch(`/api/tickets/${ticketId}/status`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
     },
+    credentials: 'include', 
     body: JSON.stringify({ status }),
   });
+
+  if (!response.ok) {
+    throw new Error('Failed to update status');
+  }
+
   return response.json();
 };

@@ -12,4 +12,7 @@ router.get('/', requireAuth, ticketController.getMyTickets);
 // GET /api/tickets/assigned - Get assigned tickets (Protected)
 router.get('/assigned', requireAuth, ticketController.getAssignedTickets);
 
+// PUT /api/tickets/:id/status - Update ticket status (Technician only)
+router.put('/:id/status', requireAuth, ticketController.updateTicketStatus);
+
 module.exports = router;

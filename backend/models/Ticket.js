@@ -43,7 +43,8 @@ const ticketSchema = new mongoose.Schema({
       'In Progress',
       'Waiting for Parts',
       'Completed',
-      'Closed'
+      'Closed',
+      'Cancelled'
     ],
     default: 'Submitted'
   },
