@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { checkAccess, logout as apiLogout } from '../services/authService';
+import { checkAccess, logout as apiLogout } from '@/services/authService';
 
 const AccessContext = createContext();
 
