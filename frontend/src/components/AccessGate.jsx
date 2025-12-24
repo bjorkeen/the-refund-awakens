@@ -1,4 +1,4 @@
-import { useAccess } from '../context/AccessContext';
+import { useAccess } from '@/context/AccessContext';
 
 const AccessGate = ({ children }) => {
   const { loading } = useAccess();

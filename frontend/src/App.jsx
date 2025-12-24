@@ -1,16 +1,16 @@
 import { Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import AccessGate from './components/AccessGate';
-import PrivateRoute from './components/PrivateRoute';
-import HomePage from './pages/HomePage';
-import AuthPanel from './components/AuthPanel';
-import Dashboard from './pages/Dashboard';
+import AccessGate from '@/components/AccessGate';
+import PrivateRoute from '@/components/PrivateRoute';
+import AuthPanel from '@/components/AuthPanel';
+import Header from '@/components/Layout/Header/Header';
+import Footer from '@/components/Layout/Footer/Footer';
 
-import CreateTicket from './pages/CreateTicket';
-import MyTickets from './pages/MyTickets';
-import Playground from './pages/Playground';
+import HomePage from '@/pages/HomePage';
+import DashboardPage from '@/pages/DashboardPage'; 
+import Playground from '@/pages/Playground';
 
-import Footer from './components/Footer/Footer';
+import CustomerDashboard from '@/components/Dashboard/CustomerDashboard';
+import CreateTicket from '@/components/Tickets/CreateTicketForm';
 
 function App() {
   return (
@@ -20,12 +20,12 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPanel />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          
+          <Route path="/dashboard" element={<DashboardPage />} />
              
-
           <Route path="/requests" element={
             <PrivateRoute>
-              <MyTickets />
+              <CustomerDashboard />
             </PrivateRoute>
           } />
 
@@ -40,7 +40,6 @@ function App() {
           
         </Routes>
       </AccessGate>
-          {/* Footer always visible */}
       <Footer />
     </>
   );

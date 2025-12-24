@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAccess } from "../../context/AccessContext";
-import * as authService from "../../services/authService";
+import { useAccess } from "@/context/AccessContext";
+import * as authService from "@/services/authService";
 import AuthForm from "../AuthForm";
 import MessageBox from "../MessageBox";
 import styles from "./AuthPanel.module.css";
