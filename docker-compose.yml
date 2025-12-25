@@ -18,6 +18,8 @@ services:
       - MONGO_URI=${MONGO_URI}
     ports:
       - "5050:5050"
+    volumes:
+      - ./backend/uploads:/app/uploads  
     depends_on:
       - mongo_db
     networks:

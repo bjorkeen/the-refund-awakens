@@ -41,7 +41,6 @@ exports.createTicket = async (req, res) => {
       type,
       category,
       description,
-      photos,
     } = req.body;
 
     // 1. autovalidate warranty & assign center
@@ -60,10 +59,11 @@ exports.createTicket = async (req, res) => {
       });
     }
 
-    // 2. create Ticket ID (TKT-TIMESTAMP)
+    // 3. create Ticket ID (TKT-TIMESTAMP)
     const ticketId = `TKT-${Date.now()}`;
+    const filePaths = req.body.attachments || []; //get paths from middleware | if none uploaded -> null array []
 
-    // 3. create Ticket record in DB
+    // 4. create Ticket record in DB
     const newTicket = new Ticket({
       customer: req.user.userId,
       ticketId,
@@ -76,8 +76,12 @@ exports.createTicket = async (req, res) => {
       issue: {
         category,
         description,
-        photos: photos || [],
+        photos: filePaths,  //fill old legacy field to avoid crash/conflicts with frontend
       },
+
+      attachments : filePaths,  //fill new schema fields
+
+
       //  Results
       warrantyStatus,
       assignedRepairCenter: assignedTech ? assignedTech._id : null,
@@ -101,6 +105,7 @@ exports.createTicket = async (req, res) => {
       assignedRepairCenter: assignedTech
         ? assignedTech.fullName
         : "Pending Assignment",
+      uploadedFiles : filePaths //return paths for validation  
     });
   } catch (error) {
     console.error("Create Ticket Error:", error);

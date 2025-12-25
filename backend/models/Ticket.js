@@ -30,7 +30,7 @@ const ticketSchema = new mongoose.Schema({
   issue: {
     category: { type: String, required: true },
     description: { type: String, required: true },
-    photos: [{ type: String }],
+    attachments: [{ type : String }], //changed to attachments (C.B.)
     invoice: { type: String }
   },
 

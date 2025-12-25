@@ -19,3 +19,6 @@ backend/dist/
 Thumbs.db
 tree.txt
 .github/copilot-instructions.md
+
+backend/uploads/*
+!backend/uploads/.gitkeep

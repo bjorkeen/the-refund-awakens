@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const ticketController = require('../controllers/ticketController');
 const { requireAuth } = require('../middleware/authMiddleware');
+const { upload, resizeImage } = require('../middleware/uploadMiddleware');
+
 
 // POST /api/tickets - Create new ticket (Protected)
-router.post('/', requireAuth, ticketController.createTicket);
+router.post('/', requireAuth, upload.array('photos', 5), resizeImage, ticketController.createTicket);
 
 // GET /api/tickets - Get user's ticket (Protected)
 router.get('/', requireAuth, ticketController.getMyTickets);
