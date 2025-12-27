@@ -1,113 +1,64 @@
-/* --- frontend/src/pages/HomePage.module.css --- */
-
-
-.dashboardContainer {
-  width: 100%;
-  max-width: 1000px; 
-  margin: 0 auto;    
-  padding: 20px;     
+.pageContainer {
+  min-height: calc(100vh - 80px); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc; 
+  padding: 20px;
 }
 
-.headerRow {
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  margin-bottom: 30px; 
+/* τα βάζει δίπλα-δίπλα */
+.contentWrapper {
+  display: flex;
+  flex-direction: row; /* Αριστερά-Δεξιά */
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  gap: 60px; /* Απόσταση ασφαλείας για να μην "κολλήσει" η φόρμα στο κείμενο */
+}
+
+/* 3. Το Μήνυμα (Αριστερά) */
+.welcomeSection {
+  flex: 1;
+  text-align: left;
+}
+
+.welcomeTitle {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 20px;
+}
+
+.welcomeTitle span {
+  color: #2563eb; 
 }
 
 .welcomeText {
-  color: #6b7280; 
-  margin-top: 5px;
-  font-size: 0.9rem; 
+  font-size: 1.2rem;
+  color: #64748b;
+  max-width: 480px;
 }
 
-.statsGrid {
-  display: grid; 
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px; 
-  margin-bottom: 40px;
+.accentLine {
+  width: 50px;
+  height: 5px;
+  background-color: #2563eb;
+  margin-top: 30px;
+  border-radius: 10px;
 }
 
-
-.card {
-  background-color: white;
-  padding: 20px;
-  border-radius: 12px; 
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
-  border: 1px solid #e5e7eb; 
-  
-  display: flex; 
-  flex-direction: column; 
+.authSection {
+  flex-shrink: 0; 
 }
-
-.cardHeader {
-  display: flex;
-  justify-content: space-between; 
-  align-items: center;
-  margin-bottom: 10px;
+/*gia kinito*/
+@media (max-width: 950px) {
+  .contentWrapper {
+    flex-direction: column; /* Μόνο εδώ μπαίνουν το ένα κάτω από το άλλο */
+    text-align: center;
+  }
+  .welcomeSection { text-align: center; }
+  .welcomeText { margin: 0 auto; }
+  .accentLine { margin: 20px auto; }
 }
-
-.cardIcon {
-  font-size: 1.5rem; 
-  padding: 10px;
-  border-radius: 50%; 
-  background-color: #f3f4f6; 
-}
-
-.cardNumber {
-  font-size: 2rem; 
-  font-weight: 700; 
-  color: #111827; 
-  margin: 0;
-}
-
-.cardLabel {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #374151;
-}
-
-.cardSub {
-  font-size: 0.8rem;
-  color: #6b7280; 
-}
-
-
-.recentSection {
-  background-color: white;
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid #e5e7eb;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse; 
-  margin-top: 15px;
-}
-
-.table th {
-  text-align: left; 
-  padding: 12px;
-  color: #6b7280;
-  border-bottom: 1px solid #e5e7eb; 
-  font-size: 0.85rem;
-  text-transform: uppercase; 
-}
-
-.table td {
-  padding: 16px 12px; /* Χώρος γύρω από το κείμενο */
-  border-bottom: 1px solid #e5e7eb; /* Διαχωριστική γραμμή */
-}
-
-.badge {
-  padding: 4px 10px;
-  border-radius: 99px; /* Οβάλ σχήμα */
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.badge-pending { background-color: #f3f4f6; color: #374151; } /* Γκρι */
-.badge-progress { background-color: #dbeafe; color: #1e40af; } /* Μπλε */
-.badge-completed { background-color: #dcfce7; color: #166534; } /* Πράσινο */

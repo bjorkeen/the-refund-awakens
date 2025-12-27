@@ -11,6 +11,7 @@ import Playground from "@/pages/Playground";
 import TicketDetailsPage from "@/pages/TicketDetailsPage";
 import CustomerDashboard from "@/components/Dashboard/CustomerDashboard";
 import CreateTicket from "@/components/Tickets/CreateTicketForm";
+import ForgotPassword from "@/components/AuthForm/ForgotPassword";
 
 function App() {
   return (
@@ -20,7 +21,11 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPanel />} />
+          
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
+          <Route path="/dashboard" element={<DashboardPage />} />
+          
           <Route path="/dashboard" element={<DashboardPage />} />
 
           <Route

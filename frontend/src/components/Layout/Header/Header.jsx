@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAccess } from '@/context/AccessContext';
 import logo from '@/assets/logo.png';
 import styles from './Header.module.css';
@@ -6,27 +6,34 @@ import styles from './Header.module.css';
 const Header = () => {
   const { hasAccess, logout } = useAccess();
   const navigate = useNavigate();
+  const location = useLocation(); // Χρειαζόμαστε αυτό για να ξέρουμε σε ποιο URL είμαστε
+
   const handleLogout = async () => {
     await logout();
-    navigate("./auth");
+    navigate("/");
   };
 
   return (
     <header className={styles.header}>
       <div className={styles.container}>
-        <div className={styles.logo}>
+        {/* ΑΡΙΣΤΕΡΑ: Το Logo */}
+        <Link to="/" className={styles.logo}>
           <img src={logo} alt="Electronics R&R" className={styles.logoImage} />
           <span>
             Electronics <strong>R&amp;R</strong>
           </span>
-        </div>
+        </Link>
 
+        {/* ΔΕΞΙΑ: Το Μενού */}
         <nav className={styles.nav}>
-          <Link to="/dashboard" className={styles.link}>
-            Home
-          </Link>
-
-          {hasAccess ? (
+          {/* Εμφάνιση μενού ΜΟΝΟ αν:
+              1. Ο χρήστης έχει πρόσβαση (hasAccess)
+              2. ΔΕΝ είναι στην αρχική 
+              3. ΔΕΝ είναι στο forgot password 
+          */}
+          {hasAccess && 
+           location.pathname !== "/" && 
+           location.pathname !== "/forgot-password" ? (
             <>
               <Link to="/dashboard" className={styles.link}>
                 ☷ Dashboard
@@ -41,13 +48,7 @@ const Header = () => {
                 Sign Out
               </button>
             </>
-          ) : (
-            <>
-              <Link to="/auth" className={styles.authButton}>
-                Sign In
-              </Link>
-            </>
-          )}
+          ) : null}
         </nav>
       </div>
     </header>
