@@ -117,6 +117,14 @@ export default function TicketDetailsPage() {
                     <strong>Category:</strong> {ticket.issue.category}
                 </div>
             </div>
+
+            <div className="td-section">
+                <div className="td-section-title">Customer Details</div>
+                <div className="td-text">
+                    <strong>Name:</strong> {ticket.customer.name} <br/>
+                    <strong>Email:</strong> {ticket.customer.email}
+                </div>
+            </div>
           </div>
 
           {/* Sidebar */}
@@ -124,6 +132,16 @@ export default function TicketDetailsPage() {
             <div className="td-section">
                 <div className="td-section-title">Date Submitted</div>
                 <div className="td-text">{new Date(ticket.createdAt).toLocaleString()}</div>
+            </div>
+
+            {/* Purchase Date*/}
+            <div className="td-section">
+                <div className="td-section-title">Purchase Date</div>
+                <div className="td-text">
+                    {ticket.product?.purchaseDate 
+                        ? new Date(ticket.product.purchaseDate).toLocaleDateString() 
+                        : 'N/A'}
+                </div>
             </div>
 
             {/* TECHNICIAN ONLY CONTROLS */}

@@ -14,6 +14,39 @@
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
 }
 
+/* Στυλ για τα Tabs */
+.ct-tabs {
+  display: flex;
+  background-color: #f3f4f6;
+  padding: 4px;
+  
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ct-tab {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.ct-tab:hover {
+  color: #111827;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.ct-tab.active {
+  background-color: #ffffff;
+  color: #2563eb; 
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 .ct-header {
   padding: 18px 20px;
   border-bottom: 1px solid #e5e7eb;
@@ -234,4 +267,89 @@
 .ct-btn-primary:hover:not(:disabled) {
   background: #1d4ed8;
   border-color: #1d4ed8;
+}
+
+
+
+/* Στυλ για το κουτάκι του Alert */
+.ct-warranty-alert {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+/* Στυλ όταν είναι επιτυχία (Πράσινο) */
+.ct-warranty-success {
+  background-color: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+/* Στυλ όταν είναι προειδοποίηση (Κίτρινο/Πορτοκαλί) */
+.ct-warranty-warning {
+  background-color: #fffbeb;
+  color: #b45309;
+  border-color: #fcd34d;
+}
+/* Στυλ για το μήνυμα κάτω από το κουμπί Submit όταν δεν είναι επιτρεπτό το Submit */
+.ct-blocked-msg {
+  text-align: right; /* Το θέλουμε κοντά στο κουμπί Submit */
+  color: #dc2626;    
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 8px; /* Λίγο κενό από το κουμπί */
+  background-color: #fef2f2;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-left: auto; /* Σπρώχνει το κουτί δεξιά σε flex container */
+}
+
+/*Quick Scripts / Chips Styles */
+.ct-quick-scripts {
+  margin-bottom: 8px;
+}
+
+.ct-quick-label {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.ct-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ct-chip {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ct-chip:hover {
+  background: #e5e7eb;
+  color: #111827;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.ct-chip:active {
+  background: #d1d5db;
+  transform: translateY(0);
 }

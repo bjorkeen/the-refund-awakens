@@ -14,6 +14,19 @@ const ticketSchema = new mongoose.Schema({
     unique: true,
   },
 
+  // 1. ΠΡΟΣΘΗΚΗ: Τύπος Αιτήματος (Repair ή Return)
+  serviceType: {
+    type: String,
+    enum: ['Repair', 'Return'],
+    required: true
+  },
+
+  //Στοιχεία Επικοινωνίας (Snapshot)
+  contactInfo: {
+    fullName: { type: String, required: true },
+    email: { type: String, required: true }
+  },
+
   // Product Details 
   product: {
     serialNumber: { type: String, required: true },

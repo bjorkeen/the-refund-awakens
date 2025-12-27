@@ -1,19 +1,24 @@
 const Ticket = require("../models/Ticket");
 const User = require("../models/User");
 
-// Helper: Warranty Validation (DMN)
-// Rule: < 24 months = Under Warranty
-const checkWarranty = (purchaseDate) => {
+// Helper: Warranty/Return Validation (DMN)
+// Rule: < 15 days = Under Warranty
+const checkWarranty = (purchaseDate, serviceType) => {
   const today = new Date();
   const pDate = new Date(purchaseDate);
 
-  // difference in months
-  const diffMonths =
-    (today.getFullYear() - pDate.getFullYear()) * 12 +
-    (today.getMonth() - pDate.getMonth());
+// Υπολογισμός διαφοράς σε χρόνο (ms)
+  const diffTime = Math.abs(today - pDate);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 
-  if (diffMonths <= 24) return "Under Warranty";
-  return "Out of Warranty";
+  if (serviceType === 'Return') {
+    // Κανόνας για Επιστροφή: 15 μέρες
+    return diffDays <= 15 ? 'Eligible for Return' : 'Return Period Expired';
+  } else {
+    // Κανόνας για Επισκευή: 24 μήνες (περίπου 730 μέρες)
+    const diffMonths = (today.getFullYear() - pDate.getFullYear()) * 12 + (today.getMonth() - pDate.getMonth());
+    return diffMonths <= 24 ? 'Under Warranty' : 'Out of Warranty';
+  }
 };
 
 // Helper: Repair Center Assignment (DMN)
@@ -35,6 +40,9 @@ const assignRepairCenter = (productType) => {
 exports.createTicket = async (req, res) => {
   try {
     const {
+      serviceType,
+      contactName,
+      contactEmail,
       serialNumber,
       model,
       purchaseDate,
@@ -45,7 +53,7 @@ exports.createTicket = async (req, res) => {
     } = req.body;
 
     // 1. autovalidate warranty & assign center
-    const warrantyStatus = checkWarranty(purchaseDate);
+    const warrantyStatus = checkWarranty(purchaseDate, serviceType);
 
     // 2. Smart Assignment
     let assignedTech = await User.findOne({
@@ -67,6 +75,11 @@ exports.createTicket = async (req, res) => {
     const newTicket = new Ticket({
       customer: req.user.userId,
       ticketId,
+      serviceType,
+      contactInfo: {
+        fullName: contactName,
+        email: contactEmail
+      },
       product: {
         serialNumber,
         model,

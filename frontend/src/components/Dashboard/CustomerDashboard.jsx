@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./CustomerDashboard.css";
 import { getMyTickets } from "@/services/ticketService";
 
-// --- (Helper Functions) ---
+// Helper Functions
 function formatDateTime(value) {
   if (!value) return "-";
   const d = new Date(value);
@@ -50,7 +50,7 @@ function getLastUpdate(t) {
   return t.updatedAt || t.lastUpdatedAt || t.createdAt || null;
 }
 
-// --- Main Component ---
+//Main Component 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
   
@@ -62,15 +62,36 @@ export default function CustomerDashboard() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    if (showModal) {
+      // Όταν ανοίγει το Modal, κρύβουμε την εξωτερική μπάρα
+      document.body.style.overflow = 'hidden'; 
+    } else {
+      // Όταν κλείνει, την επαναφέρουμε
+      document.body.style.overflow = 'unset'; 
+    }
+
+    // Καθαρισμός αν φύγουμε από τη σελίδα
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showModal]); 
+
 
   useEffect(() => {
     let alive = true;
+
     const load = async () => {
       try {
         setLoading(true);
         setErrorMsg("");
         const data = await getMyTickets();
         
+        // Λογική για να βρούμε τον πίνακα δεδομένων
         const list = Array.isArray(data)
           ? data
           : Array.isArray(data?.tickets)
@@ -89,9 +110,11 @@ export default function CustomerDashboard() {
         if (alive) setLoading(false);
       }
     };
+
     load();
+
     return () => { alive = false; };
-  }, []);
+  }, []); 
 
   const availableStatuses = useMemo(() => {
     const set = new Set(
@@ -133,7 +156,13 @@ export default function CustomerDashboard() {
   }, [tickets, query, statusFilter, dateFrom, dateTo]);
 
   const onViewDetails = (t) => {
-    navigate(`/tickets/${t._id}`);
+    setSelectedTicket(t);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedTicket(null);
   };
 
   return (
@@ -253,6 +282,120 @@ export default function CustomerDashboard() {
             </table>
           )}
         </div>
+
+        {/* Modal */}
+        {showModal && selectedTicket && (
+          <div className="modal-overlay" onClick={closeModal}>
+            <div className="modal-box modal-box-large" onClick={(e) => e.stopPropagation()}>
+              {/* Header */}
+              <div className="td-header">
+                <div className="td-title">
+                  <h1>Repair Request</h1>
+                  <div className="td-id">ID: {getTicketId(selectedTicket)}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div className={`badge-${(selectedTicket.status || '').toLowerCase().replace(/ /g,'-')} td-status-badge`}>
+                    {selectedTicket.status || 'Unknown'}
+                  </div>
+                  <button className="modal-close" onClick={closeModal}>×</button>
+                </div>
+              </div>
+
+              <div className="modal-content">
+                {/* Timeline */}
+                {selectedTicket.status !== 'Cancelled' && (
+                  <div className="td-timeline">
+                    <div className="td-progress-bar">
+                      <div 
+                        className="td-progress-fill" 
+                        style={{ 
+                          width: `${(() => {
+                            const STEPS = ['Submitted', 'In Progress', 'Completed', 'Closed'];
+                            const status = selectedTicket.status || 'Submitted';
+                            let idx = STEPS.indexOf(status);
+                            if (idx < 0) {
+                              if (status === 'Pending Validation') idx = 0;
+                              else if (status === 'Waiting for Parts') idx = 1;
+                              else idx = 0;
+                            }
+                            return (idx / (STEPS.length - 1)) * 100;
+                          })()}%` 
+                        }}
+                      ></div>
+                    </div>
+                    {['Submitted', 'In Progress', 'Completed', 'Closed'].map((step, idx) => {
+                      const STEPS = ['Submitted', 'In Progress', 'Completed', 'Closed'];
+                      const status = selectedTicket.status || 'Submitted';
+                      let currentIdx = STEPS.indexOf(status);
+                      if (currentIdx < 0) {
+                        if (status === 'Pending Validation') currentIdx = 0;
+                        else if (status === 'Waiting for Parts') currentIdx = 1;
+                        else currentIdx = 0;
+                      }
+                      
+                      return (
+                        <div key={step} className={`td-step ${idx <= currentIdx ? (idx === currentIdx ? 'active' : 'completed') : ''}`}>
+                          <div className="td-step-circle">
+                            {idx < currentIdx ? '✓' : idx + 1}
+                          </div>
+                          <div className="td-step-label">{step}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Grid Layout */}
+                <div className="td-grid">
+                  {/* Main Content */}
+                  <div className="td-main">
+                    <div className="td-section">
+                      <div className="td-section-title">Issue Description</div>
+                      <div className="td-text">
+                        {selectedTicket.issue?.description || selectedTicket.description || 'N/A'}
+                      </div>
+                    </div>
+                    
+                    <div className="td-section">
+                      <div className="td-section-title">Product Details</div>
+                      <div className="td-text">
+                        <strong>Model:</strong> {getModel(selectedTicket)} <br/>
+                        <strong>Serial Number:</strong> {getSerial(selectedTicket)} <br/>
+                        <strong>Category:</strong> {getIssue(selectedTicket)}
+                      </div>
+                    </div>
+
+                    <div className="td-section">
+                      <div className="td-section-title">Customer Details</div>
+                      <div className="td-text">
+                        <strong>Name:</strong> {selectedTicket.contactInfo?.fullName || 'N/A'} <br/>
+                        <strong>Email:</strong> {selectedTicket.contactInfo?.email || 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sidebar */}
+                  <div className="td-sidebar">
+                    <div className="td-section">
+                      <div className="td-section-title">Date Submitted</div>
+                      <div className="td-text">{formatDateTime(selectedTicket.createdAt)}</div>
+                    </div>
+
+                    <div className="td-section">
+                      <div className="td-section-title">Purchase Date</div>
+                      <div className="td-text">
+                        {selectedTicket.product?.purchaseDate 
+                          ? new Date(selectedTicket.product.purchaseDate).toLocaleDateString() 
+                          : 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
