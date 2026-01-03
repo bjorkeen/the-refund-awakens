@@ -1,17 +1,9 @@
 
 .footer {
-  /* ΚΑΡΦΩΜΑ ΣΤΟ ΚΑΤΩ ΜΕΡΟΣ */
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  z-index: 1000;
-  
   width: 100%;
   background-color: #2563eb; 
   color: #f9fafb;
-  /* Μικρότερο padding για να είναι πιο λεπτό το footer */
-  padding: 8px 16px 6px; 
-  box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.15);
+  padding: 16px 16px 12px; 
 }
 
 .footer-inner {
@@ -22,34 +14,35 @@
 
 .footer-title {
   margin: 0;
-  font-size: 16px; 
+  font-size: 20px;
   font-weight: 600;
 }
 
 .footer-subtitle {
-  margin: 2px auto 8px; 
+  margin: 4px auto 12px; 
   max-width: 550px;
-  font-size: 11px; 
-  line-height: 1.3;
+  font-size: 12px;
+  line-height: 1.4;
   color: #e0ecff;
 }
+
 
 .footer-buttons {
   display: flex;
   flex-direction: row; 
   justify-content: center; 
-  gap: 10px; 
-  margin-bottom: 8px;
+  gap: 12px; 
+  margin-bottom: 12px;
 }
 
 .footer-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   border-radius: 6px; 
   border: none;
-  padding: 3px 10px; 
-  font-size: 11px;
+  padding: 4px 12px; 
+  font-size: 12px;
   cursor: pointer;
   text-decoration: none;
   transition: all 0.2s ease;
@@ -57,7 +50,7 @@
 }
 
 .footer-btn-emoji {
-  font-size: 13px; 
+  font-size: 14px;
 }
 
 .footer-btn.primary {
@@ -82,10 +75,11 @@
   background-color: #e5e7eb;
 }
 
+
 .footer-divider {
   border: none;
   border-top: 1px solid rgba(239, 246, 255, 0.2);
-  margin: 8px 0 6px; 
+  margin: 12px 0 8px; 
 }
 
 .footer-bottom {
@@ -97,9 +91,11 @@
 }
 
 .footer-copy {
-  font-size: 10px;
+  font-size: 11px;
   color: #e5e7eb;
 }
+
+
 
 .footer-social {
   display: flex;
@@ -108,13 +104,13 @@
 }
 
 .social-btn {
-  width: 22px; 
-  height: 22px;
+  width: 26px; 
+  height: 26px;
   border-radius: 999px;
   border: 1px solid rgba(239, 246, 255, 0.7);
   background-color: transparent;
   color: #f9fafb;
-  font-size: 10px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -125,6 +121,8 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -132,7 +130,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000; 
+  z-index: 100; 
 }
 
 .modal-content {
@@ -140,11 +138,13 @@
   border-radius: 12px;
   width: 900px;
   max-width: 95%;
-  max-height: 85vh;
+  max-height: 90vh;
   overflow-y: auto;
   padding: 24px 28px;
   box-shadow: 0 20px 35px rgba(15, 23, 42, 0.25);
 }
+
+
 
 .policy-page {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -164,6 +164,8 @@
   margin-bottom: 20px;
   text-align: center;
 }
+
+
 
 .policy-card {
   background-color: #ffffff;
@@ -237,6 +239,7 @@
   margin-bottom: 3px;
 }
 
+
 .policy-tip {
   margin-top: 10px;
   padding: 10px 12px;
@@ -266,6 +269,7 @@
   display: flex;
   align-items: center;
 }
+
 
 .policy-columns {
   display: flex;
@@ -301,6 +305,7 @@
   border: 1px solid #fecaca;
 }
 
+
 .contact-modal {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #111827;
@@ -329,6 +334,7 @@
 .contact-modal-value {
   color: #374151;
 }
+
 
 .policy-actions {
   display: flex;
@@ -369,14 +375,26 @@
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
+.contact-modal-line {
+  display: flex;
+  gap: 12px;
+}
+
+.contact-modal-label {
+  min-width: 60px;
+  text-align: left;
+}
+
 @media (max-width: 640px) {
   .footer-bottom {
     flex-direction: column;
     align-items: center;
   }
+
   .footer-social {
     margin-left: 0;
   }
+  
   .footer-buttons {
     flex-direction: column; 
   }
