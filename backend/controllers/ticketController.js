@@ -103,8 +103,10 @@ exports.createTicket = async (req, res) => {
 
 exports.getMyTickets = async (req, res) => {
   try {
-    const tickets = await Ticket.find({ customer: req.user.userId }).sort({ createdAt: -1 });
-    res.json(tickets);
+    // Technician: only their assigned tickets
+const tickets = await Ticket.find({ assignedTo: req.user._id }).sort({ createdAt: -1 });
+res.json(tickets);
+
   } catch (error) {
     res.status(500).json({ message: "Server error fetching tickets" });
   }
@@ -125,11 +127,32 @@ exports.updateTicketStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const ticket = await Ticket.findById(req.params.id);
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+if (!ticket) return res.status(404).json({ message: "Ticket not found" });
 
-    ticket.status = status;
-    await ticket.save();
-    res.json(ticket);
+// Customers cannot change status
+if (req.user.role === "Customer") {
+  return res.status(403).json({ message: "Customers cannot update status" });
+}
+
+// Technician can only update if assigned
+if (req.user.role === "Technician") {
+  if (!ticket.assignedTo || ticket.assignedTo.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ message: "You can only update tickets assigned to you" });
+  }
+}
+
+ticket.status = req.body.status;
+
+// log status history if you track it
+ticket.history.push({
+  action: "Status Updated",
+  by: req.user._id,
+  date: new Date(),
+  details: `New status: ${req.body.status}`,
+});
+
+await ticket.save();
+res.json(ticket);
   } catch (error) {
     res.status(500).json({ message: 'Server error updating status' });
   }
@@ -151,4 +174,38 @@ exports.getTicketById = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
+};
+
+export const addInternalNote = async (req, res) => {
+  const { note } = req.body;
+  if (!note || !note.trim()) {
+    return res.status(400).json({ message: "Note is required" });
+  }
+
+  const ticket = await Ticket.findById(req.params.id);
+  if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+
+  // Customers cannot add internal notes
+  if (req.user.role === "Customer") {
+    return res.status(403).json({ message: "Customers cannot add internal notes" });
+  }
+
+  // Technician: only if assigned
+  if (req.user.role === "Technician") {
+    if (!ticket.assignedTo || ticket.assignedTo.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "You can only add notes to tickets assigned to you" });
+    }
+  }
+
+  ticket.internalNotes.push({ note: note.trim(), by: req.user._id });
+
+  // add to history too
+  ticket.history.push({
+    action: "Internal Note Added",
+    by: req.user._id,
+    date: new Date(),
+  });
+
+  await ticket.save();
+  res.json(ticket);
 };

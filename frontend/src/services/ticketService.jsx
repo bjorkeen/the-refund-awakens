@@ -47,3 +47,15 @@ export const updateTicketStatus = async (id, status) => {
   const response = await api.patch(`/tickets/${id}/status`, { status });
   return response.data;
 };
+
+export async function addInternalNote(ticketId, note) {
+  const res = await fetch(`/api/tickets/${ticketId}/internal-notes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ note }),
+  });
+
+  if (!res.ok) throw new Error("Failed to add internal note");
+  return res.json();
+}

@@ -22,4 +22,9 @@ router.get('/:id', requireAuth, ticketController.getTicketById);
 // PATCH /api/tickets/:id/status - Update status (Technician only)
 router.patch('/:id/status', requireAuth, ticketController.updateTicketStatus);
 
+router.get("/assigned", protect, authorize("Technician"), getAssignedTickets); // Technician's assigned tickets
+
+router.post("/:id/internal-notes", protect, addInternalNote); // Add internal note to ticket
+
+
 module.exports = router;

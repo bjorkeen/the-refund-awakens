@@ -25,8 +25,8 @@ const userSchema = new mongoose.Schema({
   },
   specialty: {
     type: String,
-    enum: ['Smartphone', 'Laptop', 'TV', 'Other', null],
-    default: null
+    enum: ['Smartphone', 'Laptop', 'TV', 'Other'],
+    default: 'Other',
   },
   createdAt: {
     type: Date,

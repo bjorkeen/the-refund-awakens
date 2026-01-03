@@ -1,128 +1,96 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getTicket, updateTicketStatus } from '@/services/ticketService';
-import { useAccess } from '@/context/AccessContext';
-import './TicketDetails.css';
 
-const STEPS = ['Submitted', 'In Progress', 'Completed', 'Closed'];
 
-export default function TicketDetailsPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { user } = useAccess();
-  
-  const [ticket, setTicket] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+const API_BASE = import.meta?.env?.VITE_API_BASE_URL || ""; 
 
-  // Fetch Ticket
-  const fetchTicket = async () => {
-    try {
-      setLoading(true);
-      const data = await getTicket(id);
-      setTicket(data);
-    } catch (err) {
-      setError('Ticket not found or unauthorized.');
-    } finally {
-      setLoading(false);
-    }
-  };
+async function request(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    credentials: "include", // IMPORTANT: sends cookies (JWT cookie)
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+    },
+  });
 
-  useEffect(() => {
-    fetchTicket();
-  }, [id]);
+  // Try to parse JSON when possible
+  const contentType = res.headers.get("content-type") || "";
+  const isJson = contentType.includes("application/json");
+  const data = isJson ? await res.json().catch(() => null) : await res.text().catch(() => null);
 
-  // Status change Handler (Technician)
-  const handleStatusChange = async (e) => {
-    const newStatus = e.target.value;
-    try {
-      // Optimistic Update
-      setTicket(prev => ({ ...prev, status: newStatus }));
-      await updateTicketStatus(id, newStatus);
-    } catch (err) {
-      alert("Failed to update status");
-      fetchTicket();
-    }
-  };
+  if (!res.ok) {
+    const message =
+      (data && data.message) ||
+      (typeof data === "string" && data) ||
+      `Request failed (${res.status})`;
+    const err = new Error(message);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
 
-  if (loading) return <div className="td-container">Loading...</div>;
-  if (error) return <div className="td-container" style={{color:'red'}}>{error}</div>;
-  if (!ticket) return null;
+  return data;
+}
 
-  // Repair ή Return
-  const requestType = ticket.serviceType || "Repair"; 
+/**
+ * Get single ticket details
+ * GET /api/tickets/:id
+ */
+export function getTicket(id) {
+  return request(`/api/tickets/${id}`);
+}
 
-  return (
-    <div className="td-page">
-      <div className="td-container">
-        
-        <button onClick={() => navigate(-1)} className="td-back-btn">
-          ← Back to Dashboard
-        </button>
+/**
+ * Update ticket status
+ * PATCH /api/tickets/:id/status
+ * body: { status: "In Progress" }
+ */
+export function updateTicketStatus(id, status) {
+  return request(`/api/tickets/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+}
 
-        <div className="td-card">
-          {/* Header */}
-          <div className="td-header">
-            <div className="td-title">
-              <h1>{requestType} Request</h1>
-              <div className="td-id">ID: {ticket.ticketId || ticket._id}</div>
-            </div>
-            
-            <div className={`td-status-badge badge-${(ticket.status || 'submitted').toLowerCase().replace(/ /g,'-')}`}>
-                {ticket.status}
-            </div>
-          </div>
+/**
+ * Add internal note (staff only; backend enforces rules)
+ * POST /api/tickets/:id/internal-notes
+ * body: { note: "..." }
+ */
+export function addInternalNote(id, note) {
+  return request(`/api/tickets/${id}/internal-notes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ note }),
+  });
+}
 
-          <div className="td-content">
-            <div className="td-grid">
-                <div className="td-main">
-                    <div className="td-section">
-                        <div className="td-section-title">Description</div>
-                        <div className="td-text">
-                            {ticket.issue?.description || ticket.description || "No description provided."}
-                        </div>
-                    </div>
-                    
-                    <div className="td-section">
-                        <div className="td-section-title">Product Info</div>
-                        <div className="td-text">
-                            <strong>Model:</strong> {ticket.product?.model} <br/>
-                            <strong>Serial:</strong> {ticket.product?.serialNumber} <br/>
-                            <strong>Type:</strong> {ticket.product?.type}
-                        </div>
-                    </div>
-                </div>
+/**
+ * (Optional) Technician's assigned tickets
+ * GET /api/tickets/assigned
+ */
+export function getAssignedTickets() {
+  return request(`/api/tickets/assigned`);
+}
 
-                <div className="td-sidebar">
-                    <div className="td-section">
-                        <div className="td-section-title">Request Details</div>
-                        <div className="td-text">
-                            <strong>Type:</strong> {requestType} <br/>
-                            <strong>Date:</strong> {new Date(ticket.createdAt).toLocaleDateString()}
-                        </div>
-                    </div>
-                    
-                    {/* Τεχνικά controls (αν ο χρήστης είναι Admin/Technician) */}
-                    {(user.role === 'Technician' || user.role === 'Admin') && (
-                        <div className="td-section">
-                            <div className="td-section-title" style={{color:'#0369a1'}}>Action</div>
-                            <select value={ticket.status} onChange={handleStatusChange} style={{padding:'5px', width:'100%'}}>
-                                <option value="Submitted">Submitted</option>
-                                <option value="Pending Validation">Pending Validation</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Waiting for Parts">Waiting for Parts</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Closed">Closed</option>
-                                <option value="Cancelled">Cancelled</option>
-                            </select>
-                        </div>
-                    )}
-                </div>
-            </div>
+/**
+ * (Optional) Customer's tickets list
+ * GET /api/tickets
+ */
+export function getMyTickets() {
+  return request(`/api/tickets`);
+}
 
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+/**
+ * (Optional) Create ticket (if you want it here too)
+ * POST /api/tickets
+ * Supports FormData (for images) OR JSON
+ */
+export function createTicket(payload) {
+  const isFormData = payload instanceof FormData;
+
+  return request(`/api/tickets`, {
+    method: "POST",
+    headers: isFormData ? {} : { "Content-Type": "application/json" },
+    body: isFormData ? payload : JSON.stringify(payload),
+  });
 }

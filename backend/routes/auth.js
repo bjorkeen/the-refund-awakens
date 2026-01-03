@@ -10,14 +10,18 @@ router.post('/logout', authController.logout);
 router.get('/me', requireAuth, authController.getMe);
 
 router.get('/seed-users', async (req, res) => {
-    const User = require('../models/User');
-    
     const seedUsers = [
-        { fullName: "Michael Scott", email: "manager@demo.com", password: "demo123!", role: "Manager" },
-        { fullName: "Bob Builder", email: "tech@demo.com", password: "demo123!", role: "Technician" },
-        { fullName: "John Employee", email: "staff@demo.com", password: "demo123!", role: "Employee" },
-        { fullName: "Karen Karenopoulou", email: "customer@demo.com", password: "demo123!", role: "Customer" }
-    ];
+    { fullName: "Michael Scott", email: "manager@demo.com", password: "demo123!", role: "Manager" },
+
+    // Technicians by specialty (match your ticket product types exactly)
+    { fullName: "Tech Smartphone", email: "tech.smartphone@demo.com", password: "demo123!", role: "Technician", specialty: "Smartphone" },
+    { fullName: "Tech Laptop", email: "tech.laptop@demo.com", password: "demo123!", role: "Technician", specialty: "Laptop" },
+    { fullName: "Tech TV", email: "tech.tv@demo.com", password: "demo123!", role: "Technician", specialty: "TV" },
+    { fullName: "Tech Other", email: "tech.other@demo.com", password: "demo123!", role: "Technician", specialty: "Other" },
+
+    { fullName: "John Employee", email: "staff@demo.com", password: "demo123!", role: "Employee" },
+    { fullName: "Karen Karenopoulou", email: "customer@demo.com", password: "demo123!", role: "Customer" }
+  ];
 
     try {
         let report = [];
