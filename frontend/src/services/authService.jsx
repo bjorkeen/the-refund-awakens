@@ -22,4 +22,10 @@ export const checkAccess = () =>
 export const testApi = () =>
   api.get('/test');
 
+// Admin Create User Function
+export const createUser = async (userData) => {
+  const response = await api.post('/auth/create-user', userData);
+  return response.data;
+};
+
 

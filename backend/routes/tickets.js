@@ -1,31 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const ticketController = require('../controllers/ticketController');
-const { requireAuth } = require('../middleware/authMiddleware');
 
-// IMPORT YOUR UPLOAD MIDDLEWARE
+// 1. Import τα σωστά middleware (protect ΚΑΙ authorize)
+const { protect, authorize } = require('../middleware/authMiddleware');
+
+// 2. Import το upload middleware
 const { upload, resizeImage } = require('../middleware/uploadMiddleware');
 
-// POST /api/tickets - Create new ticket (Protected)
-// RESTORE THE UPLOAD CHAIN: Auth -> Upload -> Resize -> Controller
-router.post('/', requireAuth, upload.array('photos', 5), resizeImage, ticketController.createTicket);
+// --- ROUTES ---
 
-// GET /api/tickets - Get user's ticket (Protected)
-router.get('/', requireAuth, ticketController.getMyTickets);
+// POST /api/tickets - Create new ticket
+router.post('/', protect, upload.array('photos', 5), resizeImage, ticketController.createTicket);
 
-// despoina all tickets for staff route
-router.get('/all', requireAuth, ticketController.getAllTickets);
+// GET /api/tickets - Get user's tickets
+router.get('/', protect, ticketController.getMyTickets);
 
-// despoina all tickets for manager route
-router.get('/admin/all', requireAuth, ticketController.getAllTicketsAdmin);
+// GET /api/tickets/all - Staff Route (Employee, Technician, Manager, Admin)
+router.get('/all', protect, authorize('Employee', 'Technician', 'Manager', 'Admin'), ticketController.getAllTickets);
+
+// GET /api/tickets/admin/all - Manager/Admin Route
+router.get('/admin/all', protect, authorize('Manager', 'Admin'), ticketController.getAllTicketsAdmin);
 
 // GET /api/tickets/assigned - Get technician's tickets
-router.get('/assigned', requireAuth, ticketController.getAssignedTickets);
+router.get('/assigned', protect, ticketController.getAssignedTickets);
 
 // GET /api/tickets/:id - Get single ticket details
-router.get('/:id', requireAuth, ticketController.getTicketById);
+router.get('/:id', protect, ticketController.getTicketById);
 
-// PATCH /api/tickets/:id/status - Update status (Technician only)
-router.patch('/:id/status', requireAuth, ticketController.updateTicketStatus);
+// PATCH /api/tickets/:id/status - Update status
+router.patch('/:id/status', protect, ticketController.updateTicketStatus);
 
 module.exports = router;

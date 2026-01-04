@@ -103,3 +103,41 @@ exports.getMe = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+// Admin Create User (Internal)
+exports.adminCreateUser = async (req, res) => {
+  try {
+    const { fullName, email, password, role, specialty } = req.body;
+
+    // 1. Check if user exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // 2. Create user
+    const user = await User.create({
+      fullName,
+      email,
+      password,
+      role: role || 'Customer',
+      specialty: role === 'Technician' ? specialty : null 
+    });
+
+    res.status(201).json({
+      success: true,
+      message: `User ${user.fullName} created as ${user.role}`,
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        specialty: user.specialty
+      }
+    });
+
+  } catch (error) {
+    console.error('Create User Error:', error);
+    res.status(500).json({ message: 'Server error creating user' });
+  }
+};
