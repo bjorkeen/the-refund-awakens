@@ -1,7 +1,9 @@
 import { useAccess } from "@/context/AccessContext.jsx";
 import CustomerDashboard from "@/components/Dashboard/CustomerDashboard";
 import AdminDashboard from "@/components/Dashboard/AdminDashboard";
-import TechnicianDashboard from "@/components/Dashboard/TechnicianDashboard"
+import TechnicianDashboard from "@/components/Dashboard/TechnicianDashboard";
+import StaffDashboard from "@/components/Dashboard/StaffDashboard";
+
 
 const DashboardPage = () => {
   const { user } = useAccess();
@@ -16,6 +18,9 @@ const DashboardPage = () => {
     case 'Admin':
     case 'Manager':
       return <AdminDashboard />;
+    // Προσθέτουμε μόνο αυτό για να βλέπεις τις αλλαγές σου ως Employee
+    case 'Employee':
+      return <StaffDashboard />;
     case 'Customer':
     default:
       return <CustomerDashboard />;

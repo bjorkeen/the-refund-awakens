@@ -10,4 +10,5 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
   background-color: var(--color-bg);
   color: var(--color-text-main);
+  padding-bottom: 110px;
 }

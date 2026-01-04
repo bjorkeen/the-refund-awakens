@@ -110,6 +110,38 @@ exports.getMyTickets = async (req, res) => {
   }
 };
 
+//despoina all tickets for staff
+exports.getAllTickets = async (req, res) => {
+  try {
+    if (req.user.role === 'Customer') {
+      return res.status(403).json({ message: "Access denied. Staff only." });
+    }
+
+    const tickets = await Ticket.find()
+      .populate('customer', 'fullName email')
+      .sort({ createdAt: -1 });
+
+    res.json(tickets);
+  } catch (error) {
+    console.error("Error fetching all tickets:", error);
+    res.status(500).json({ message: "Error fetching all tickets" });
+  }
+};
+// despoina all tickets for manager
+exports.getAllTicketsAdmin = async (req, res) => {
+  try {
+    // Φέρνουμε όλα τα tickets και κάνουμε populate τα στοιχεία του πελάτη και του τεχνικού
+    const tickets = await Ticket.find({})
+      .populate('customer', 'fullName email')
+      .populate('assignedRepairCenter', 'fullName')
+      .sort({ createdAt: -1 });
+    
+    res.json(tickets);
+  } catch (error) {
+    res.status(500).json({ message: "Σφάλμα κατά την ανάκτηση όλων των tickets" });
+  }
+};
+
 exports.getAssignedTickets = async (req, res) => {
   try {
     const tickets = await Ticket.find({ assignedRepairCenter: req.user.userId })
