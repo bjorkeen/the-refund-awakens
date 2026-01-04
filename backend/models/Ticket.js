@@ -97,6 +97,13 @@ const ticketSchema = new mongoose.Schema({
     notes: String
   }],
 
+  internalComments: [
+    {
+      text: { type: String, required: true, trim: true },
+      by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

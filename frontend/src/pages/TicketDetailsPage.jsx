@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getTicket, updateTicketStatus } from '@/services/ticketService';
+import { getTicket, updateTicketStatus, addInternalComment } from '@/services/ticketService';
 import { useAccess } from '@/context/AccessContext';
 import './TicketDetails.css';
 
@@ -14,6 +14,24 @@ export default function TicketDetailsPage() {
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+const [commentText, setCommentText] = useState("");
+const [savingComment, setSavingComment] = useState(false);
+
+const handleAddComment = async () => {
+  if (!commentText.trim()) return;
+
+  try {
+    setSavingComment(true);
+    const updated = await addInternalComment(id, commentText);
+    setTicket(updated);
+    setCommentText("");
+  } catch (err) {
+    alert("Failed to add internal comment.");
+  } finally {
+    setSavingComment(false);
+  }
+};
 
   // Fetch Ticket
   const fetchTicket = async () => {
@@ -78,6 +96,47 @@ export default function TicketDetailsPage() {
                 <div className="td-main">
                     <div className="td-section">
                         <div className="td-section-title">Description</div>
+                        {user?.role !== "Customer" && (
+  <div className="td-section">
+    <div className="td-section-title">Internal Comments</div>
+
+    <div className="td-comments-list">
+      {ticket?.internalComments?.length ? (
+        ticket.internalComments.map((c, idx) => (
+          <div key={idx} className="td-comment">
+            <div className="td-comment-meta">
+              <strong>{c?.by?.fullName || "User"}</strong>
+              <span>
+                {c?.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
+              </span>
+            </div>
+            <div className="td-comment-text">{c.text}</div>
+          </div>
+        ))
+      ) : (
+        <div className="td-text">No internal comments yet.</div>
+      )}
+    </div>
+
+    <div className="td-comment-box">
+      <textarea
+        value={commentText}
+        onChange={(e) => setCommentText(e.target.value)}
+        placeholder="Write an internal note (not visible to customers)…"
+        disabled={savingComment}
+      />
+      <button
+        type="button"
+        onClick={handleAddComment}
+        disabled={savingComment || !commentText.trim()}
+        className="td-comment-btn"
+      >
+        {savingComment ? "Saving..." : "Add Comment"}
+      </button>
+    </div>
+  </div>
+)}
+
                         <div className="td-text">
                             {ticket.issue?.description || ticket.description || "No description provided."}
                         </div>

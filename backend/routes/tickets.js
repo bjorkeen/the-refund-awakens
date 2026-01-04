@@ -24,6 +24,14 @@ router.get('/admin/all', protect, authorize('Manager', 'Admin'), ticketControlle
 
 // GET /api/tickets/assigned - Get technician's tickets
 router.get('/assigned', protect, ticketController.getAssignedTickets);
+ // POST /api/tickets/:id/internal-comments - Add internal comment
+router.post(
+  "/:id/internal-comments",
+  protect,
+  authorize("Employee", "Technician", "Manager", "Admin"),
+  ticketController.addInternalComment
+);
+
 
 // GET /api/tickets/:id - Get single ticket details
 router.get('/:id', protect, ticketController.getTicketById);
