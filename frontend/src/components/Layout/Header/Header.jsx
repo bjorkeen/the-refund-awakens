@@ -75,8 +75,12 @@ const Header = () => {
             {shouldShowMenu ? (
               <>
                 <Link to="/dashboard" className={styles.link}>☷ Dashboard</Link>
-                <Link to="/requests" className={styles.link}>🎟 Requests</Link>
-                <Link to="/create-ticket" className={styles.link}>+ New Request</Link>
+                {user?.role !== 'Technician' && (
+        <>
+          <Link to="/requests" className={styles.link}>🎟 Requests</Link>
+          <Link to="/create-ticket" className={styles.link}>+ New Request</Link>
+        </>
+      )}
 
                 {['Admin', 'Manager'].includes(user?.role)&& (
                   <button className={styles.btnCreateUser} onClick={() => setShowCreateModal(true)}>
