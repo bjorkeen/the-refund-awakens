@@ -19,6 +19,28 @@ const ticketSchema = new mongoose.Schema({
     default: 'Repair'
   },
 
+  
+  // filippa delivery method 
+  
+  deliveryMethod: {
+    type: String,
+    enum: ['courier', 'dropoff'],
+    default: 'courier'
+  },
+  
+  // Shipping Details
+  address: { type: String },
+  city: { type: String },
+  postalCode: { type: String }, // H φόρμα στέλνει postalCode
+  
+  // Contact & Photos
+  phone: { type: String },
+  contactName: { type: String }, 
+  contactEmail: { type: String },
+
+  photos: [{ type: String }], 
+  invoiceFileName: { type: String }, 
+
   //filippa contact details
   contactInfo: {
     fullName: { type: String },

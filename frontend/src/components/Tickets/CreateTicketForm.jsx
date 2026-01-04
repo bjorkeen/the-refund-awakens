@@ -44,10 +44,19 @@ export default function CreateTicket() {
   //filippa: Tab State
   const [mode, setMode] = useState("Repair"); 
 
+  //filippa: Delivery Method State 
+  const [deliveryMethod, setDeliveryMethod] = useState("courier");
+
   const [formData, setFormData] = useState({
     //filippa new fields
     contactName: "",  
     contactEmail: "",
+    phone: "",
+    // Address fields (Θα χρησιμοποιηθούν μόνο αν deliveryMethod === 'courier')
+    address: "",     
+    city: "",        
+    postalCode: "", 
+    country: "",
     //standard fields
     serialNumber: "",
     model: "",
@@ -126,12 +135,21 @@ export default function CreateTicket() {
       formData.description.trim().length >= 10;
       
     if (!isFormValid) return false;
+    // Ειδικός έλεγχος για Courier (πρέπει να έχει διεύθυνση)
+    if (deliveryMethod === 'courier') {
+        const addressValid = 
+            formData.address.trim().length > 0 &&
+            formData.city.trim().length > 0 &&
+            formData.postalCode.trim().length > 0;
+        if (!addressValid) return false;
+    }
     //filippa blocking logic
     if (isReturnExpired) return false;
     if (isWarrantyExpired) return false;
 
     return true;
-  }, [formData, isReturnExpired, isWarrantyExpired]);
+  }, 
+  [formData, deliveryMethod, isReturnExpired, isWarrantyExpired]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -139,11 +157,12 @@ export default function CreateTicket() {
   };
 
   //filippa: HANDLER ΓΙΑ ΤΑ SCRIPTS (CHIPS)
-  const handleAddScript = (text) => {
+const handleAddScript = (text) => {
     setFormData((prev) => ({
       ...prev,
-      // Αν υπάρχει ήδη script, προσθέτουμε νέα γραμμή, αλλιώς γραφουμε κείμενο
-      description: prev.description ? prev.description + "\n" + text : text
+      // Απλά αντικαθιστούμε το description με το νέο text
+      // Διαγράφει ό,τι υπήρχε πριν
+      description: text 
     }));
   };
 
@@ -182,8 +201,12 @@ export default function CreateTicket() {
       const payload = {
         //filippa fields
         serviceType: mode,
+        deliveryMethod,
         contactName: formData.contactName,
         contactEmail: formData.contactEmail,
+        address: deliveryMethod === 'dropoff' ? 'Store Drop-off' : formData.address,
+        city: deliveryMethod === 'dropoff' ? '-' : formData.city,
+        postalCode: deliveryMethod === 'dropoff' ? '-' : formData.postalCode,
         
         //standard fields
         serialNumber: formData.serialNumber.trim(),
@@ -247,7 +270,66 @@ export default function CreateTicket() {
                     <label className="ct-label">Email Address <span className="ct-required">*</span></label>
                     <input className="ct-input" type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} placeholder="Enter your email" required />
                 </div>
+                <div className="ct-field">
+                    <label className="ct-label">Phone Number <span className="ct-required">*</span></label>
+                    <input className="ct-input" type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleChange} placeholder="Enter your phone number" required />
+                </div>
             </div>
+          </div>
+
+          {/* SHIPPING */}
+          <div className="ct-section">
+            <h2 className="ct-section-title">Shipping</h2>
+            <div className="ct-logistics-options">
+                <label 
+                    className={`ct-radio-card ${deliveryMethod === 'courier' ? 'active' : ''}`}
+                    onClick={() => setDeliveryMethod('courier')}
+                >
+                    <input type="radio" checked={deliveryMethod === 'courier'} readOnly hidden />
+                    <span className="ct-radio-icon">🚚</span>
+                    <div>
+                        <strong>Courier Pickup</strong>
+                        <div className="ct-radio-subtext">We pick it up from your place</div>
+                    </div>
+                </label>
+
+                <label 
+                    className={`ct-radio-card ${deliveryMethod === 'dropoff' ? 'active' : ''}`}
+                    onClick={() => setDeliveryMethod('dropoff')}
+                >
+                    <input type="radio" checked={deliveryMethod === 'dropoff'} readOnly hidden />
+                    <span className="ct-radio-icon">🏪</span>
+                    <div>
+                        <strong>Bring to Store</strong>
+                        <div className="ct-radio-subtext">Visit our service center</div>
+                    </div>
+                </label>
+            </div>
+
+            {deliveryMethod === 'courier' ? (
+                <div className="ct-fade-in">
+                    <div className="ct-field">
+                    <label className="ct-label">Street Address <span className="ct-required">*</span></label>
+                    <input className="ct-input" name="address" value={formData.address} onChange={handleChange} placeholder="e.g. Tsimiski 45" />
+                    </div>
+                    <div className="ct-grid">
+                        <div className="ct-field">
+                            <label className="ct-label">City <span className="ct-required">*</span></label>
+                            <input className="ct-input" name="city" value={formData.city} onChange={handleChange} placeholder="e.g. Thessaloniki" />
+                        </div>
+                        <div className="ct-field">
+                            <label className="ct-label">Postal Code <span className="ct-required">*</span></label>
+                            <input className="ct-input" name="postalCode" value={formData.postalCode} onChange={handleChange} placeholder="e.g. 54622" />
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="ct-info-box">
+                    <strong>📍 Our Service Center:</strong><br/>
+                    Egnatia 123, Thessaloniki, 54630<br/>
+                    Open: Mon-Fri 09:00 - 17:00
+                </div>
+            )}
           </div>
 
           {/* PRODUCT INFO */}

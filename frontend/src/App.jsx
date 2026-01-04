@@ -9,9 +9,9 @@ import HomePage from "@/pages/HomePage";
 import DashboardPage from "@/pages/DashboardPage";
 import Playground from "@/pages/Playground";
 import TicketDetailsPage from "@/pages/TicketDetailsPage";
-import CustomerDashboard from "@/components/Dashboard/CustomerDashboard";
 import CreateTicket from "@/components/Tickets/CreateTicketForm";
 import ForgotPassword from "@/components/AuthForm/ForgotPassword";
+import CustomerRequests from "@/components/Dashboard/CustomerRequests"; 
 
 function App() {
   return (
@@ -20,19 +20,16 @@ function App() {
       <AccessGate>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/auth" element={<AuthPanel />} />
-          
+          <Route path="/auth" element={<AuthPanel />} />          
           <Route path="/forgot-password" element={<ForgotPassword />} />
-
           <Route path="/dashboard" element={<DashboardPage />} />
           
-          <Route path="/dashboard" element={<DashboardPage />} />
-
+          {/* MY REQUESTS: Αυτό πρέπει να φορτώνει ΑΠΕΥΘΕΙΑΣ το CustomerRequests */}
           <Route
             path="/requests"
             element={
               <PrivateRoute>
-                <CustomerDashboard />
+                <CustomerRequests />
               </PrivateRoute>
             }
           />

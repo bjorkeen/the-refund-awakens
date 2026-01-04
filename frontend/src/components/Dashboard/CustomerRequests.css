@@ -1,0 +1,524 @@
+.mt-page {
+  padding: 26px 16px 60px;
+}
+
+.mt-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mt-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.mt-subtitle {
+  margin: 6px 0 18px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* Filters card */
+.mt-filters {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 14px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1.2fr; 
+  gap: 14px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  margin-bottom: 18px;
+}
+
+@media (max-width: 1000px) {
+  .mt-filters {
+    grid-template-columns: 1fr 1fr; 
+  }
+}
+
+@media (max-width: 600px) {
+  .mt-filters {
+    grid-template-columns: 1fr; 
+  }
+}
+
+.mt-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mt-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.mt-inputwrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mt-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.mt-input,
+.mt-select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 13px;
+  outline: none;
+  background: #fff;
+}
+
+.mt-inputwrap .mt-input {
+  padding-left: 32px;
+}
+
+.mt-input:focus,
+.mt-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.mt-daterow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 420px) {
+  .mt-daterow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Table card */
+.mt-tablecard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px; /* Smoother corners */
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.mt-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mt-table thead th {
+  background-color: #f9fafb; /* Light gray header */
+  color: #374151;
+  font-weight: 600;
+  text-align: left;
+  padding: 14px 24px; /* Increased padding */
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mt-table tbody td {
+  padding: 16px 24px; /* Dashboard-style padding */
+  border-bottom: 1px solid #f3f4f6;
+  color: #1f2937;
+  font-size: 0.95rem;
+  vertical-align: middle; /* Centers content vertically */
+}
+
+/* Ensure mono font matches dashboard exactly */
+.mt-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+/* Make product model bold like Dashboard */
+.mt-product-model {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Center the Header for Actions */
+.mt-table thead th:last-child {
+  text-align: center;
+}
+
+/* Table body cell for Actions */
+.mt-actions-col {
+  text-align: center; /* Centers the button horizontally */
+  vertical-align: middle; /* Centers the button vertically */
+  padding: 14px !important; 
+}
+
+/* The View button styling */
+.mt-link {
+  border: none;
+  background: none;
+  color: #2563eb; /* Blue color from image */
+  font-weight: 700; /* Bold style as requested */
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.95rem;
+  display: inline-block; /* Helps with alignment */
+  transition: color 0.2s;
+}
+
+.mt-link:hover {
+  text-decoration: underline;
+  color: #1d4ed8;
+}
+
+/* Product cell */
+.mt-product {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mt-product-model {
+  font-weight: 600;
+  color: #111827;
+}
+
+.mt-product-serial {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.mt-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  color: #111827;
+}
+
+.mt-datetime {
+  color: #374151;
+  font-size: 12.5px;
+}
+
+/* Status badges */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.status-blue {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+.status-green {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.status-gray {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+/* Το μαύρο ημιδιάφανο φόντο */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden !important; /* Absolutely prevent any scrolling */
+}
+
+/* Το λευκό κουτί του Modal */
+.modal-box {
+  background: white;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+  max-height: 95vh; /* Increased from 90vh to allow more content */
+  margin: 20px; /* Add margin for spacing */
+  display: flex;
+  flex-direction: column;
+  /* Removed overflow-y: auto to eliminate scrollbar */
+}
+
+/* Modal content area with scrollbar */
+.modal-content {
+  flex: 1;
+  padding: 24px 32px; 
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+
+
+/* Larger modal for details view */
+.modal-box-large {
+  max-width: 850px; 
+  width: 95%;
+}
+
+/* Ticket Details Header inside Modal */
+.td-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; 
+  padding: 24px 32px;  
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.td-title h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.td-id {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.td-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+/* Χρωματική Παλέτα */
+.badge-submitted { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+.badge-pending-validation { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.badge-in-progress { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+.badge-waiting-for-parts { background: #fed7aa; color: #9a3412; border-color: #ffedd5; }
+.badge-completed { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.badge-closed { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
+.badge-cancelled { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+
+/* Timeline */
+.td-timeline {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 40px 0 60px; 
+  width: 100%;
+}
+
+.td-progress-bar {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+
+.td-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  transition: width 0.4s ease;
+}
+
+.td-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 1;
+}
+
+.td-step-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: #9ca3af;
+  transition: all 0.3s;
+}
+
+.td-step.completed .td-step-circle {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.td-step.active .td-step-circle {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+}
+
+.td-step-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.td-step.active .td-step-label,
+.td-step.completed .td-step-label {
+  color: #2563eb;
+}
+
+/* Grid Layout */
+.td-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  gap: 40px;
+  padding: 24px 0; 
+  width: 100%;    
+}
+
+.td-section {
+  margin-bottom: 24px;
+}
+
+.td-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.td-text {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.td-text strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+.mt-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pg-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px; 
+}
+
+.pg-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.pg-num {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  transition: all 0.2s;
+}
+
+.pg-num.active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.pg-num:hover:not(.active) {
+  background: #f3f4f6;
+}
+
+/* TYPE BADGES */
+.type-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Repair: Μπλε */
+.type-repair {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #dbeafe;
+}
+
+/* Return: Μωβ */
+.type-return {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+}

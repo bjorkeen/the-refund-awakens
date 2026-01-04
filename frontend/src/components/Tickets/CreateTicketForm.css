@@ -353,3 +353,76 @@
   background: #d1d5db;
   transform: translateY(0);
 }
+
+/* --- LOGISTICS & SHIPPING STYLES --- */
+
+/* Το container που κρατάει τα δύο κουτιά (Courier / Store) */
+.ct-logistics-options {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+/* Το κάθε κουτί επιλογής */
+.ct-radio-card {
+  flex: 1;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #f9fafb;
+}
+
+.ct-radio-card:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.ct-radio-card.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+/* Το emoji/εικονίδιο */
+.ct-radio-icon {
+  font-size: 20px;
+}
+
+/* Το μικρό κείμενο κάτω από τον τίτλο */
+.ct-radio-subtext {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Το κουτί πληροφοριών για το Drop-off */
+.ct-info-box {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 15px;
+  border-radius: 8px;
+  color: #0369a1;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Animation εμφάνισης */
+.ct-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive για κινητά: Τα κουτιά να μπαίνουν κάθετα */
+@media (max-width: 500px) {
+  .ct-logistics-options {
+    flex-direction: column;
+  }
+}

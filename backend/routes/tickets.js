@@ -13,6 +13,12 @@ router.post('/', protect, upload.array('photos', 5), resizeImage, ticketControll
 // GET /api/tickets - Get user's ticket (Protected)
 router.get('/', protect, ticketController.getMyTickets);
 
+// despoina all tickets for staff route
+router.get('/all', requireAuth, ticketController.getAllTickets);
+
+// despoina all tickets for manager route
+router.get('/admin/all', requireAuth, ticketController.getAllTicketsAdmin);
+
 // GET /api/tickets/assigned - Get technician's tickets
 router.get('/assigned', protect, ticketController.getAssignedTickets);
 
