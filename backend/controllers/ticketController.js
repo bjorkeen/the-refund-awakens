@@ -174,15 +174,20 @@ exports.updateTicketStatus = async (req, res) => {
 exports.getTicketById = async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id)
-      .populate('customer', 'fullName email')
-      .populate('assignedRepairCenter', 'fullName');
+  .populate('customer', 'fullName email')
+  .populate('assignedRepairCenter', 'fullName')
+  .populate('internalComments.by', 'fullName email role');
 
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
     if (req.user.role === 'Customer' && ticket.customer._id.toString() !== req.user.userId) {
       return res.status(401).json({ message: 'Not authorized' });
     }
-
+if (req.user.role === 'Customer') {
+  const t = ticket.toObject();
+  delete t.internalComments;
+  return res.json(t);
+}
     res.json(ticket);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

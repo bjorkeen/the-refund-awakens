@@ -105,7 +105,9 @@ const handleAddComment = async () => {
         ticket.internalComments.map((c, idx) => (
           <div key={idx} className="td-comment">
             <div className="td-comment-meta">
-              <strong>{c?.by?.fullName || "User"}</strong>
+              <strong>
+  {c?.by?.fullName || c?.by?.email?.split('@')[0] || "User"}
+</strong>
               <span>
                 {c?.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
               </span>
