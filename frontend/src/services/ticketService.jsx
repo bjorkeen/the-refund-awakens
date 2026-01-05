@@ -32,13 +32,8 @@ export const getMyTickets = async () => {
 
 // despoina service call for staff
 export const getAllTickets = async () => {
-  try {
-    const response = await api.get('/tickets/all');
+    const response = await api.get('/tickets/all'); 
     return response.data;
-  } catch (error) {
-    console.error("Error fetching all tickets:", error);
-    throw error;
-  }
 };
 // despoina service call for manager
 export const getAllTicketsAdmin = async () => {

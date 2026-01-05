@@ -17,7 +17,7 @@ router.post('/', protect, upload.array('photos', 5), resizeImage, ticketControll
 router.get('/', protect, ticketController.getMyTickets);
 
 // GET /api/tickets/all - Staff Route (Employee, Technician, Manager, Admin)
-router.get('/all', protect, authorize('Employee', 'Technician', 'Manager', 'Admin'), ticketController.getAllTickets);
+router.get('/all', protect, authorize('Employee', 'Staff','Technician', 'Manager', 'Admin'), ticketController.getAllTickets);
 
 // GET /api/tickets/admin/all - Manager/Admin Route
 router.get('/admin/all', protect, authorize('Manager', 'Admin'), ticketController.getAllTicketsAdmin);
