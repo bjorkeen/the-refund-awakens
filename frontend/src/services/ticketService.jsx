@@ -35,6 +35,11 @@ export const getAllTickets = async () => {
     const response = await api.get('/tickets/all'); 
     return response.data;
 };
+// despoina service call for staff to assign technician
+export const assignTicket = async (id, technicianId) => {
+  const response = await api.patch(`/tickets/${id}/assign`, { technicianId });
+  return response.data;
+};
 // despoina service call for manager
 export const getAllTicketsAdmin = async () => {
   const response = await api.get('/tickets/admin/all');

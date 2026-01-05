@@ -124,6 +124,30 @@ exports.getAllTickets = async (req, res) => {
     res.status(500).json({ message: "Error fetching all tickets" });
   }
 };
+//despoina assign technician to ticket
+
+exports.assignTechnician = async (req, res) => {
+  try {
+    const { technicianId } = req.body;
+    const ticket = await Ticket.findById(req.params.id);
+    
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+    ticket.assignedRepairCenter = technicianId; // Αναθέτουμε τον τεχνικό
+    
+    // Προσθήκη στο ιστορικό
+    ticket.history.push({
+      action: "Technician Assigned",
+      by: req.user.userId,
+      notes: `Assigned to technician ID: ${technicianId}`
+    });
+
+    await ticket.save();
+    res.json({ success: true, message: "Technician assigned successfully", ticket });
+  } catch (error) {
+    res.status(500).json({ message: 'Error assigning technician' });
+  }
+};
 
 // despoina all tickets for manager
 exports.getAllTicketsAdmin = async (req, res) => {
