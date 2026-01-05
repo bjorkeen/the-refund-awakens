@@ -133,7 +133,7 @@
   border-bottom: 1px solid #f3f4f6;
   color: #1f2937;
   font-size: 0.95rem;
-  vertical-align: middle; /* Centers content vertically */
+  vertical-align: middle; 
 }
 
 /* Ensure mono font matches dashboard exactly */
@@ -156,8 +156,8 @@
 
 /* Table body cell for Actions */
 .mt-actions-col {
-  text-align: center; /* Centers the button horizontally */
-  vertical-align: middle; /* Centers the button vertically */
+  text-align: center; 
+  vertical-align: middle; 
   padding: 14px !important; 
 }
 
@@ -165,8 +165,8 @@
 .mt-link {
   border: none;
   background: none;
-  color: #2563eb; /* Blue color from image */
-  font-weight: 700; /* Bold style as requested */
+  color: #2563eb; 
+  font-weight: 700; 
   cursor: pointer;
   padding: 0;
   font-size: 0.95rem;
@@ -263,11 +263,11 @@
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   position: relative;
   animation: slideUp 0.3s ease-out;
-  max-height: 95vh; /* Increased from 90vh to allow more content */
-  margin: 20px; /* Add margin for spacing */
+  max-height: 95vh; 
+  margin: 20px; 
   display: flex;
   flex-direction: column;
-  /* Removed overflow-y: auto to eliminate scrollbar */
+  
 }
 
 /* Modal content area with scrollbar */
@@ -336,9 +336,11 @@
 
 /* Χρωματική Παλέτα */
 .badge-submitted { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+.badge-shipping { background: #ddd6fe; color: #5b21b6; border-color: #ede9fe; }
 .badge-pending-validation { background: #fef3c7; color: #92400e; border-color: #fde68a; }
 .badge-in-progress { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
 .badge-waiting-for-parts { background: #fed7aa; color: #9a3412; border-color: #ffedd5; }
+.badge-shipped-back { background: #e9d5ff; color: #6b21a8; border-color: #f3e8ff; }
 .badge-completed { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
 .badge-closed { background: #f3f4f6; color: #374151; border-color: #e5e7eb; }
 .badge-cancelled { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
@@ -521,4 +523,58 @@
   background-color: #f5f3ff;
   color: #7c3aed;
   border: 1px solid #ddd6fe;
+}
+
+/* Rating Modal Styles */
+.rating-modal-content {
+  text-align: center;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rating-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.rating-subtitle {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 20px;
+  max-width: 300px;
+}
+
+.stars-container {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.star-btn {
+  font-size: 28px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: transform 0.2s;
+}
+
+.star-btn:hover {
+  transform: scale(1.2);
+}
+
+.maybe-later-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.maybe-later-btn:hover {
+  color: #6b7280;
+  text-decoration: underline;
 }

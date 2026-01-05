@@ -4,7 +4,7 @@ import { getTicket, updateTicketStatus } from '@/services/ticketService';
 import { useAccess } from '@/context/AccessContext';
 import './TicketDetails.css';
 
-const STEPS = ['Submitted', 'In Progress', 'Completed', 'Closed'];
+const STEPS = ['Submitted', 'Shipping', 'In Progress', 'Shipped Back', 'Completed'];
 
 export default function TicketDetailsPage() {
   const { id } = useParams();
@@ -108,9 +108,11 @@ export default function TicketDetailsPage() {
                             <div className="td-section-title" style={{color:'#0369a1'}}>Action</div>
                             <select value={ticket.status} onChange={handleStatusChange} style={{padding:'5px', width:'100%'}}>
                                 <option value="Submitted">Submitted</option>
+                                <option value="Shipping">Shipping</option>
                                 <option value="Pending Validation">Pending Validation</option>
                                 <option value="In Progress">In Progress</option>
                                 <option value="Waiting for Parts">Waiting for Parts</option>
+                                <option value="Shipped Back">Shipped Back</option>
                                 <option value="Completed">Completed</option>
                                 <option value="Closed">Closed</option>
                                 <option value="Cancelled">Cancelled</option>

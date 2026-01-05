@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./CustomerRequests.css";
-// ΠΡΟΣΘΗΚΗ: import και του getTicket για να φέρνουμε τα full details
+// ΠΡΟΣΘΗΚΗ του getTicket για να φέρνουμε τα full details
 import { getMyTickets, getTicket } from "@/services/ticketService";
 
 
@@ -55,9 +55,26 @@ export default function CustomerDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [modalLoading, setModalLoading] = useState(false); // Για να ξέρουμε πότε φορτώνει τα details
 
+  //Rating Modal
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [hasRated, setHasRated] = useState(false); // To prevent duplicate popups in one session
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const ticketsPerPage = 5;
+
+  useEffect(() => {
+  if (selectedTicket) {
+    const status = normalizeStatus(selectedTicket.status);
+    if (status === "Completed" && !hasRated) {
+      // Small delay so the user sees the "Completed" status in the main modal first
+      const timer = setTimeout(() => {
+        setShowRatingModal(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }
+}, [selectedTicket, hasRated]);
 
   useEffect(() => {
     if (showModal) {
@@ -120,19 +137,19 @@ export default function CustomerDashboard() {
   const indexOfFirstTicket = indexOfLastTicket - ticketsPerPage;
   const currentTickets = filteredTickets.slice(indexOfFirstTicket, indexOfLastTicket);
 
-  // --- UPDATED VIEW DETAILS ---
+  // UPDATED VIEW DETAILS 
   const onViewDetails = async (t) => {
-    // 1. Ανοίγουμε το modal με τα δεδομένα που ήδη έχουμε (για ταχύτητα)
+    // Ανοίγουμε το modal με τα δεδομένα που ήδη έχουμε 
     setSelectedTicket(t);
     setShowModal(true);
     setModalLoading(true);
 
-    // 2. Ζητάμε τα πλήρη στοιχεία από τον server (Address, Phone, Photos)
+    // Ζητάμε τα πλήρη στοιχεία από τον server (Address, Phone, Photos)
     try {
         const idToFetch = t._id || t.id; // Χρήση του ID
         if (idToFetch) {
             const fullData = await getTicket(idToFetch);
-            // 3. Ενημερώνουμε το selectedTicket με τα νέα πλήρη δεδομένα
+            // Ενημερώνουμε το selectedTicket με τα νέα πλήρη δεδομένα
             setSelectedTicket(prev => ({ ...prev, ...fullData }));
         }
     } catch (err) {
@@ -256,7 +273,7 @@ export default function CustomerDashboard() {
           )}
         </div>
 
-        {/* --- MODAL --- */}
+        {/* MODAL */}
         {showModal && selectedTicket && (
           <div className="modal-overlay" onClick={closeModal}>
             <div className="modal-box modal-box-large" onClick={(e) => e.stopPropagation()}>
@@ -276,17 +293,31 @@ export default function CustomerDashboard() {
 
               <div className="modal-content">
                 {/* Timeline */}
-                {normalizeStatus(selectedTicket.status) !== 'Cancelled' && (
+                {normalizeStatus(selectedTicket.status) !== 'Cancelled' && normalizeStatus(selectedTicket.status) !== 'Closed' && (
                   <div className="td-timeline">
-                     <div className="td-progress-bar">
-                       <div className="td-progress-fill" style={{ width: '25%' }}></div>
-                     </div>
-                     {['Submitted', 'In Progress', 'Completed', 'Closed'].map((step, idx) => (
-                        <div key={step} className={`td-step ${idx === 0 ? 'active' : ''}`}>
-                          <div className="td-step-circle">{idx + 1}</div>
-                          <div className="td-step-label">{step}</div>
-                        </div>
-                     ))}
+                     {(() => {
+                       const steps = ['Submitted', 'Shipping', 'In Progress', 'Shipped Back', 'Completed'];
+                       let currentStatus = normalizeStatus(selectedTicket.status);
+                       // Map substates to main timeline steps
+                       if (currentStatus === 'Pending Validation' || currentStatus === 'Waiting for Parts') {
+                         currentStatus = 'In Progress';
+                       }
+                       const currentIndex = steps.findIndex(s => s === currentStatus);
+                       const progressWidth = currentIndex < 0 ? 0 : ((currentIndex + 1) / steps.length) * 100;
+                       return (
+                         <>
+                           <div className="td-progress-bar">
+                             <div className="td-progress-fill" style={{ width: `${progressWidth}%` }}></div>
+                           </div>
+                           {steps.map((step, idx) => (
+                              <div key={step} className={`td-step ${step === currentStatus ? 'active' : ''}`}>
+                                <div className="td-step-circle">{idx + 1}</div>
+                                <div className="td-step-label">{step}</div>
+                              </div>
+                           ))}
+                         </>
+                       );
+                     })()}
                   </div>
                 )}
                 
@@ -326,12 +357,12 @@ export default function CustomerDashboard() {
                         <div className="td-text">
                           {(selectedTicket.deliveryMethod === 'dropoff' || selectedTicket.address === 'Store Drop-off') ? (
                              <div className="td-logistics-dropoff">
-                                <span>🏪 Customer will bring to store (Drop-off)</span>
+                                <span>Customer will bring to store (Drop-off)</span>
                              </div>
                           ) : (
                              <div>
                                 <div className="td-logistics-courier">
-                                    <span>🚚 Courier Pickup</span>
+                                    <span>Courier Pickup</span>
                                 </div>
                                 <div className="td-logistics-details">
                                     <strong>Address:</strong> {selectedTicket.address || 'N/A'} <br/>
@@ -406,6 +437,46 @@ export default function CustomerDashboard() {
 
               </div>
             </div>
+            {/* Rating Modal */}
+            {showRatingModal && (
+            <div className="modal-overlay" style={{ zIndex: 1100 }}>
+              <div className="modal-box" style={{ maxWidth: '400px' }}>
+                <div className="rating-modal-content">
+                  <div className="rating-icon">⭐</div>
+                  <h2 className="td-title" style={{ fontSize: '20px' }}>Rate your experience</h2>
+                  <p className="rating-subtitle">
+                    Your request is completed! How would you rate our service?
+                  </p>
+                  
+                  <div className="stars-container">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button 
+                        key={star} 
+                        className="star-btn"
+                        onClick={() => {
+                          console.log(`Rating submitted: ${star}`); // Replace with your API call
+                          setHasRated(true);
+                          setShowRatingModal(false);
+                        }}
+                      >
+                        ⭐
+                      </button>
+                    ))}
+                  </div>
+
+                  <button 
+                    className="maybe-later-btn" 
+                    onClick={() => {
+                      setShowRatingModal(false);
+                      setHasRated(true); // Prevents re-popping in same session
+                    }}
+                  >
+                    Maybe later
+                  </button>
+                </div>
+              </div>
+            </div>
+            )}
           </div>
         )}
 
