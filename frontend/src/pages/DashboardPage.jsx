@@ -18,7 +18,6 @@ const DashboardPage = () => {
     case 'Admin':
     case 'Manager':
       return <AdminDashboard />;
-    // Προσθέτουμε μόνο αυτό για να βλέπεις τις αλλαγές σου ως Employee
     case 'Employee':
       return <StaffDashboard />;
     case 'Customer':

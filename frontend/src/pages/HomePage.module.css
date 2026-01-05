@@ -7,18 +7,16 @@
   padding: 20px;
 }
 
-/* τα βάζει δίπλα-δίπλα */
 .contentWrapper {
   display: flex;
-  flex-direction: row; /* Αριστερά-Δεξιά */
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   max-width: 1200px;
-  gap: 60px; /* Απόσταση ασφαλείας για να μην "κολλήσει" η φόρμα στο κείμενο */
+  gap: 60px;
 }
 
-/* 3. Το Μήνυμα (Αριστερά) */
 .welcomeSection {
   flex: 1;
   text-align: left;
@@ -32,7 +30,7 @@
 }
 
 .welcomeTitle span {
-  color: #2563eb; 
+  color: #2563eb;
 }
 
 .welcomeText {
@@ -50,12 +48,12 @@
 }
 
 .authSection {
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
-/*gia kinito*/
+
 @media (max-width: 950px) {
   .contentWrapper {
-    flex-direction: column; /* Μόνο εδώ μπαίνουν το ένα κάτω από το άλλο */
+    flex-direction: column;
     text-align: center;
   }
   .welcomeSection { text-align: center; }
