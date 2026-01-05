@@ -17,7 +17,7 @@ export const NotificationProvider = ({ children }) => {
 
     timerRef.current = setTimeout(() => {
       setNotification(null);
-    }, 4000);
+    }, 3000);
   }, []);
 
   const dismissNotification = useCallback(() => {
@@ -25,10 +25,24 @@ export const NotificationProvider = ({ children }) => {
     setNotification(null);
   }, []);
 
+  // Animation Settings
   const notificationVariants = {
-    initial: { opacity: 0, y: 60, scale: 0.9 },
-    animate: { opacity: 1, y: 0, scale: 1 },
-    exit: { opacity: 0, y: 20, scale: 0.95, transition: { duration: 0.2 } }
+    initial: { 
+      opacity: 0, 
+      y: 100,
+      scale: 0.9 
+    },
+    animate: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1 
+    },
+    exit: { 
+      opacity: 0, 
+      y: 50, 
+      scale: 0.95, 
+      transition: { duration: 0.2 } 
+    }
   };
 
   return (
@@ -41,23 +55,21 @@ export const NotificationProvider = ({ children }) => {
             key={notification.id}
             className={`${styles.container} ${styles[notification.type]}`}
             
-            // --- Animations ---
             variants={notificationVariants}
             initial="initial"
             animate="animate"
             exit="exit"
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
 
-            // --- Drag / Swipe Logic ---
+            //  Swipe Logic 
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={{ right: 0.7 }}
+            dragElastic={0.7}
             onDragEnd={(event, info) => {
               if (info.offset.x > 100) {
                 dismissNotification();
               }
             }}
-            // auto-close if hover/drag
             onHoverStart={() => { if(timerRef.current) clearTimeout(timerRef.current); }}
           >
             <div className={`${styles.icon} ${notification.type === 'success' ? styles.iconSuccess : styles.iconError}`}>

@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { getAllTicketsAdmin } from "@/services/ticketService";
 import { getAllUsers, deleteUser, createUser } from "@/services/authService";
 import styles from "./AdminDashboard.module.css";
+import { useNotification } from "@/context/NotificationContext";
 
 const AdminDashboard = () => {
   const [tickets, setTickets] = useState([]);
@@ -19,6 +20,7 @@ const AdminDashboard = () => {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     const loadData = async () => {
@@ -78,8 +80,12 @@ const AdminDashboard = () => {
     try {
       await deleteUser(id);
       setUsers(users.filter((u) => u._id !== id));
+      showNotification("User deleted successfully", "success");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete user");
+      showNotification(
+        err.response?.data?.message || "Failed to delete user",
+        "error"
+      );
     }
   };
 
@@ -93,7 +99,6 @@ const AdminDashboard = () => {
       };
       const newUser = await createUser(dataToSend);
 
-      alert(`User created successfully!`);
       setUsers([newUser.user, ...users]);
       setShowCreateModal(false);
       setFormData({
@@ -103,8 +108,9 @@ const AdminDashboard = () => {
         role: "Technician",
         specialty: "Smartphone",
       });
+      showNotification("User created successfully!", "success");
     } catch (err) {
-      alert(err.message);
+      showNotification(err.response?.data?.message || err.message, "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -287,7 +293,7 @@ const AdminDashboard = () => {
                       <td>
                         <button
                           className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                          onClick={() => handleDeleteUser(u._id)}
+                          onClick={() => handleDeleteUser(u._id || u.id)}
                           title="Delete User"
                         >
                           🗑️

@@ -4,13 +4,11 @@ import PrivateRoute from "@/components/PrivateRoute";
 import AuthPanel from "@/components/AuthPanel";
 import Header from "@/components/Layout/Header/Header";
 import Footer from "@/components/Layout/Footer/Footer";
-// Import Providers
 import { AccessProvider } from './context/AccessContext';
 import { NotificationProvider } from './context/NotificationContext';
 
 import HomePage from "@/pages/HomePage";
 import DashboardPage from "@/pages/DashboardPage";
-import Playground from "@/pages/Playground";
 import TicketDetailsPage from "@/pages/TicketDetailsPage";
 import CreateTicket from "@/components/Tickets/CreateTicketForm";
 import ForgotPassword from "@/components/AuthForm/ForgotPassword";
