@@ -152,22 +152,27 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// Delete User (Admin Only)
+// Delete User (Admin & Manager)
 exports.deleteUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const userToDelete = await User.findById(req.params.id);
 
-    if (!user) {
+    if (!userToDelete) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if (user._id.toString() === req.user.id) {
-        return res.status(400).json({ message: 'You cannot delete your own admin account' });
+    if (userToDelete._id.toString() === req.user.userId) {
+        return res.status(400).json({ message: 'You cannot delete your own account' });
     }
 
-    await user.deleteOne();
+    if (req.user.role === 'Manager' && userToDelete.role === 'Admin') {
+        return res.status(403).json({ message: 'Managers cannot delete Administrators' });
+    }
+
+    await userToDelete.deleteOne();
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
+    console.error('Delete User Error:', error);
     res.status(500).json({ message: 'Error deleting user' });
   }
 };

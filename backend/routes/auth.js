@@ -15,6 +15,6 @@ router.post('/create-user', protect, authorize('Admin', 'Manager'), adminCreateU
 
 router.get('/users', protect, authorize('Admin', 'Manager'), getAllUsers);
 
-router.delete('/users/:id', protect, authorize('Admin'), deleteUser);
+router.delete('/users/:id', protect, authorize('Admin', 'Manager'), deleteUser);
 
 module.exports = router;
