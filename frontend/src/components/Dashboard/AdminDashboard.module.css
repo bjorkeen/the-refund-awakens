@@ -278,3 +278,85 @@
 .miniTable tr:hover {
     background-color: #f8fafc;
 }
+
+/* User Management Actions */
+.actionBtn {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.1rem; padding: 4px; transition: opacity 0.2s;
+}
+.actionBtn:hover { opacity: 0.7; }
+.deleteBtn { color: #ef4444; }
+
+/* MODAL STYLES (Copied from Header) */
+.modalOverlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 2000; backdrop-filter: blur(3px);
+}
+
+.modalContent {
+    background-color: white; padding: 2rem; border-radius: 12px;
+    width: 400px; box-shadow: 0 20px 25px rgba(0,0,0,0.1);
+}
+
+.modalContent h3 { margin-top: 0; margin-bottom: 1.5rem; color: #1e293b; }
+
+.formGroup { margin-bottom: 1rem; }
+.formGroup label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; }
+.formGroup input, .formGroup select {
+    width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.highlightGroup {
+    background-color: #f0f9ff; padding: 10px; border-radius: 6px;
+    border: 1px dashed #3b82f6;
+}
+
+.modalActions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+
+.btnCancel {
+    background-color: #f1f5f9; color: #475569; border: none;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+
+.btnSubmit {
+    background-color: #2563eb; color: white; border: none;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+.btnSubmit:disabled { opacity: 0.7; cursor: not-allowed; }
+
+/* Spinner */
+.spinner {
+    display: inline-block; width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
+    border-top-color: #fff; animation: spin 1s linear infinite; margin-right: 5px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ROLE BADGES */
+.roleAdmin { 
+    background-color: #f3e8ff; 
+    color: #7e22ce; 
+}
+
+.roleManager { 
+    background-color: #fff7ed;
+    color: #c2410c; 
+}
+
+.roleTechnician { 
+    background-color: #eff6ff;
+    color: #2563eb; 
+}
+
+.roleEmployee { 
+    background-color: #f0fdf4;
+    color: #15803d; 
+}
+
+.roleCustomer { 
+    background-color: #f1f5f9;
+    color: #475569; 
+}

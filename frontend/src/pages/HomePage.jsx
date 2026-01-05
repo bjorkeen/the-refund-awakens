@@ -19,7 +19,7 @@ const HomePage = () => {
           <div className={styles.accentLine}></div>
         </div>
 
-        {/* Δεξί Μέρος: Η Φόρμα (Sign In) */}
+        {/* (Sign In) */}
         <div className={styles.authSection}>
           <AuthPanel />
         </div>

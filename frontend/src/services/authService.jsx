@@ -28,4 +28,22 @@ export const createUser = async (userData) => {
   return response.data;
 };
 
+// Get All Users (Admin/Manager)
+export const getAllUsers = async () => {
+  const response = await api.get('/auth/users');
+  return response.data;
+};
+
+// Delete User (Admin Only)
+export const deleteUser = async (id) => {
+  const response = await api.delete(`/auth/users/${id}`);
+  return response.data;
+};
+
+// Update User
+export const updateUser = async (id, userData) => {
+  const response = await api.put(`/auth/users/${id}`, userData);
+  return response.data;
+};
+
 
