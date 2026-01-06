@@ -115,15 +115,12 @@ exports.getMyTickets = async (req, res) => {
   }
 };
 
-//despoina all tickets for staff
+// despoina all tickets for staff 
+
 exports.getAllTickets = async (req, res) => {
   try {
-    if (req.user.role === 'Customer') {
-      return res.status(403).json({ message: "Access denied. Staff only." });
-    }
-
     const tickets = await Ticket.find()
-      .populate('customer', 'fullName email')
+      .populate('customer', 'fullName email') 
       .sort({ createdAt: -1 });
 
     res.json(tickets);
@@ -132,6 +129,31 @@ exports.getAllTickets = async (req, res) => {
     res.status(500).json({ message: "Error fetching all tickets" });
   }
 };
+//despoina assign technician to ticket
+
+exports.assignTechnician = async (req, res) => {
+  try {
+    const { technicianId } = req.body;
+    const ticket = await Ticket.findById(req.params.id);
+    
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+    ticket.assignedRepairCenter = technicianId; // Αναθέτουμε τον τεχνικό
+    
+    // Προσθήκη στο ιστορικό
+    ticket.history.push({
+      action: "Technician Assigned",
+      by: req.user.userId,
+      notes: `Assigned to technician ID: ${technicianId}`
+    });
+
+    await ticket.save();
+    res.json({ success: true, message: "Technician assigned successfully", ticket });
+  } catch (error) {
+    res.status(500).json({ message: 'Error assigning technician' });
+  }
+};
+
 // despoina all tickets for manager
 exports.getAllTicketsAdmin = async (req, res) => {
   try {

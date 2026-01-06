@@ -16,8 +16,11 @@ router.post('/', protect, upload.array('photos', 5), resizeImage, ticketControll
 // GET /api/tickets - Get user's tickets
 router.get('/', protect, ticketController.getMyTickets);
 
+// Assign technician to ticket
+router.patch('/:id/assign', protect, authorize('Employee', 'Staff', 'Admin'), ticketController.assignTechnician);
+
 // GET /api/tickets/all - Staff Route (Employee, Technician, Manager, Admin)
-router.get('/all', protect, authorize('Employee', 'Technician', 'Manager', 'Admin'), ticketController.getAllTickets);
+router.get('/all', protect, authorize('Employee', 'Staff','Technician', 'Manager', 'Admin'), ticketController.getAllTickets);
 
 // GET /api/tickets/admin/all - Manager/Admin Route
 router.get('/admin/all', protect, authorize('Manager', 'Admin'), ticketController.getAllTicketsAdmin);
