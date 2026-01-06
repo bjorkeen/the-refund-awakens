@@ -248,3 +248,57 @@ exports.addInternalComment = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.submitFeedback = async (req, res) => {
+  try{
+    const { rating, comment } = req.body;
+
+    // validation ensure rating is 1-5
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ msg: 'Rating must be between 1 and 5' });
+    }
+
+    // find ticket ensuring it belongs to user AND is completed
+    const ticket = await Ticket.findOneAndUpdate(
+      { 
+        _id: req.params.id, 
+        customer: req.user.userId, 
+        status: 'Completed' 
+      },
+      { 
+        feedback: { 
+          rating, 
+          comment, 
+          createdAt: new Date() 
+        } 
+      },
+      { new: true }
+    );
+
+    if (!ticket) return res.status(404).json({ msg: 'Ticket unavailable for feedback (must be Completed and owned by you)' });
+    res.json(ticket);
+  } catch (err) {
+    console.error("Feedback Error:", err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// KPI stats for admin dashboard
+exports.getFeedbackKPIs = async (req, res) => {
+  try {
+    const stats = await Ticket.aggregate([
+      { $match: { "feedback.rating": { $exists: true } } },
+      {
+        $group: {
+          _id: null,
+          avgRating: { $avg: "$feedback.rating" },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    res.json(stats[0] || { avgRating: 0, count: 0 });
+  } catch (err) {
+    console.error("KPI Error:", err.message);
+    res.status(500).send('Server Error');
+  }
+};

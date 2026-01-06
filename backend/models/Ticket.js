@@ -97,20 +97,21 @@ const ticketSchema = new mongoose.Schema({
     notes: String
   }],
 
+  //added star rating feedback
+  feedback: {
+    rating: {type: Number, min : 1, max : 5},
+    comment: {type: String, trim: true},
+    createdAt: {type: Date}
+  },
+
   internalComments: [
     {
       text: { type: String, required: true, trim: true },
       by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
       createdAt: { type: Date, default: Date.now }
     }
-  ],
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
-
-ticketSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
+  ]
+}, {timestamps: true}
+);
 
 module.exports = mongoose.model('Ticket', ticketSchema);

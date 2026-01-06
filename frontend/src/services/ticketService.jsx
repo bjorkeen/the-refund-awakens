@@ -68,3 +68,16 @@ export const addInternalComment = async (id, text) => {
   const response = await api.post(`/tickets/${id}/internal-comments`, { text });
   return response.data;
 };
+
+//feedback function
+
+export const submitFeedback = async (id, feedbackData) => {
+  // feedbackData format: { rating: 5, comment: "Optional text" }
+  const response = await api.post(`/tickets/${id}/feedback`, feedbackData);
+  return response.data;
+};
+
+export const getFeedbackStats = async () => {
+  const response = await api.get('/tickets/analytics/kpi');
+  return response.data;
+};

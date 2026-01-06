@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMyTickets, getTicket } from "@/services/ticketService";
+import { getMyTickets, getTicket, submitFeedback } from "@/services/ticketService";
 import { useAccess } from "@/context/AccessContext"; 
 import "./CustomerDashboard.css";
 import WelcomeMessage from "./WelcomeMessage";
@@ -395,20 +395,27 @@ export default function CustomerDashboard() {
                   </p>
                   
                   <div className="stars-container">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button 
-                        key={star} 
-                        className="star-btn"
-                        onClick={() => {
-                          console.log(`Rating submitted: ${star}`); // Replace with your API call
-                          setHasRated(true);
-                          setShowRatingModal(false);
-                        }}
-                      >
-                        ⭐
-                      </button>
-                    ))}
-                  </div>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          className="star-btn"
+                          onClick={async () => {
+                            try {
+                              const ticketId = selectedTicket._id || selectedTicket.id;
+                              await submitFeedback(ticketId, { rating: star, comment: "" });
+                              alert("Thank you for your feedback!");
+                              setHasRated(true);
+                              setShowRatingModal(false);
+                            } catch (error) {
+                              console.error("Feedback error", error);
+                              alert("Could not submit feedback. Please try again.");
+                            }
+                          }}
+                        >
+                          ⭐
+                        </button>
+                      ))}
+                    </div>
 
                   <button 
                     className="maybe-later-btn" 

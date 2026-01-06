@@ -34,6 +34,9 @@ router.post(
   authorize("Employee", "Technician", "Manager", "Admin"),
   ticketController.addInternalComment
 );
+//KPI routes
+router.get('/analytics/kpi', protect, authorize('Manager', 'Admin'), ticketController.getFeedbackKPIs);
+router.post('/:id/feedback', protect, ticketController.submitFeedback);
 
 
 // GET /api/tickets/:id - Get single ticket details
