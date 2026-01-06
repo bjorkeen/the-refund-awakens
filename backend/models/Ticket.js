@@ -71,8 +71,8 @@ const ticketSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: [
-      'Submitted', 'Pending Validation', 'In Progress',
-      'Waiting for Parts', 'Completed', 'Closed', 'Cancelled'
+      'Submitted', 'Shipping', 'Pending Validation', 'In Progress',
+      'Waiting for Parts', 'Shipped Back', 'Completed', 'Closed', 'Cancelled'
     ],
     default: 'Submitted'
   },
@@ -97,6 +97,13 @@ const ticketSchema = new mongoose.Schema({
     notes: String
   }],
 
+  internalComments: [
+    {
+      text: { type: String, required: true, trim: true },
+      by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      createdAt: { type: Date, default: Date.now }
+    }
+  ],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

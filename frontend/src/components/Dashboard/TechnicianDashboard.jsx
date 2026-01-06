@@ -152,6 +152,7 @@ const TechnicianDashboard = () => {
                       }
                     >
                       <option value="Submitted">Submitted</option>
+                      <option value="Shipping">Shipping</option>
                       <option value="Pending Validation">
                         Pending Validation
                       </option>
@@ -159,6 +160,7 @@ const TechnicianDashboard = () => {
                       <option value="Waiting for Parts">
                         Waiting for Parts
                       </option>
+                      <option value="Shipped Back">Shipped Back</option>
                       <option value="Completed">Completed</option>
                       <option value="Closed">Closed</option>
                       <option value="Cancelled">Cancelled</option>

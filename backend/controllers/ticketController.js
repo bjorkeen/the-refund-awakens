@@ -90,6 +90,7 @@ exports.createTicket = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Ticket created successfully",
+      _id: newTicket._id,
       ticketId: newTicket.ticketId,
       warrantyStatus,
       assignedRepairCenter: assignedTech ? assignedTech.fullName : "Pending Assignment",
@@ -103,9 +104,13 @@ exports.createTicket = async (req, res) => {
 
 exports.getMyTickets = async (req, res) => {
   try {
-    const tickets = await Ticket.find({ customer: req.user.userId }).sort({ createdAt: -1 });
+    const tickets = await Ticket.find({ customer: req.user.userId })
+      .select("-internalComments")
+      .sort({ createdAt: -1 });
+
     res.json(tickets);
   } catch (error) {
+    console.error("Error fetching user tickets:", error);
     res.status(500).json({ message: "Server error fetching tickets" });
   }
 };
@@ -192,17 +197,54 @@ exports.updateTicketStatus = async (req, res) => {
 exports.getTicketById = async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id)
-      .populate('customer', 'fullName email')
-      .populate('assignedRepairCenter', 'fullName');
+  .populate('customer', 'fullName email')
+  .populate('assignedRepairCenter', 'fullName')
+  .populate('internalComments.by', 'fullName email role');
 
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
     if (req.user.role === 'Customer' && ticket.customer._id.toString() !== req.user.userId) {
       return res.status(401).json({ message: 'Not authorized' });
     }
-
+if (req.user.role === 'Customer') {
+  const t = ticket.toObject();
+  delete t.internalComments;
+  return res.json(t);
+}
     res.json(ticket);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
+  }
+};
+// Add internal comment to ticket 
+exports.addInternalComment = async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text || !text.trim()) {
+      return res.status(400).json({ message: "Comment text is required." });
+    }
+
+    const ticket = await Ticket.findById(req.params.id);
+
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+
+    ticket.internalComments = ticket.internalComments || [];
+    ticket.internalComments.push({
+      text: text.trim(),
+      by: req.user.userId
+    });
+
+    await ticket.save();
+
+    // Return updated ticket (populate comment authors)
+    const updated = await Ticket.findById(req.params.id)
+      .populate("customer", "fullName email")
+      .populate("internalComments.by", "fullName role email");
+
+    res.json(updated);
+  } catch (error) {
+    console.error("Error adding internal comment:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

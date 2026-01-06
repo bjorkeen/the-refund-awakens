@@ -63,3 +63,8 @@ export const updateTicketStatus = async (id, status) => {
   const response = await api.patch(`/tickets/${id}/status`, { status });
   return response.data;
 };
+// --- NEW FUNCTION FOR ADDING INTERNAL COMMENTS ---
+export const addInternalComment = async (id, text) => {
+  const response = await api.post(`/tickets/${id}/internal-comments`, { text });
+  return response.data;
+};
