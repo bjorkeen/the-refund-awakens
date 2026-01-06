@@ -26,12 +26,14 @@ export default function TicketDetailsPage() {
     if (!status) return 0;
     switch (status) {
       case 'Submitted': return 0;
+      case 'Shipping': return 1;
       case 'Pending Validation': 
       case 'Waiting for Parts': 
-      case 'In Progress': return 1;
-      case 'Completed': return 2;
-      case 'Closed': return 3;
-      case 'Cancelled': return -1;
+      case 'In Progress': return 2;
+      case 'Shipped Back': return 3;
+      case 'Completed': return 4;
+      case 'Cancelled':
+      case 'Closed': return -1;
       default: return 0;
     }
   };

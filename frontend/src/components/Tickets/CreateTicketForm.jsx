@@ -4,6 +4,7 @@ import { createTicket, updateTicketStatus } from "@/services/ticketService";
 //filippa import
 import { useAccess } from "@/context/AccessContext"; 
 import "./CreateTicketForm.css";
+import printJS from 'print-js';
 
 const PRODUCT_TYPES = ["Smartphone", "Laptop", "TV", "Other"];
 
@@ -275,22 +276,23 @@ const handleAddScript = (text) => {
   };
 
   const handlePrintAndShip = async () => {
-    try {
-      // Ενημερώνουμε το status σε Shipping ώστε να μην μπορεί να ακυρωθεί από το dashboard
-      await updateTicketStatus(ticketDbId, "Shipping");
-      
-      // Ανοίγει το παράθυρο εκτύπωσης του browser
-      window.print();
-      
-      // Μετά την εκτύπωση, ανακατεύθυνση στο dashboard
-      navigate("/dashboard");
-    } catch (err) {
-      console.error("Shipping update failed", err);
-      // Ακόμα και αν αποτύχει το API update, αφήνουμε την εκτύπωση για να μην κολλήσει ο πελάτης
-      window.print();
-      navigate("/dashboard");
-    }
-  };
+  const labelPath = '/Shipping Label.pdf';
+
+  try {
+    // Trigger the PDF print dialog using print-js
+    printJS(labelPath);
+
+    // Update the ticket status in your database
+    await updateTicketStatus(ticketDbId, "Shipping");
+    
+    // Navigate back to the dashboard
+    navigate("/dashboard");
+  } catch (err) {
+    console.error("Shipping update or print failed", err);
+    // Fallback: still try to navigate if the update fails
+    navigate("/dashboard");
+  }
+};
 
   //filippa: Block Messages
   const getBlockMessage = () => {
