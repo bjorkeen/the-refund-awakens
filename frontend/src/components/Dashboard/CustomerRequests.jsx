@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./CustomerRequests.css";
 // ΠΡΟΣΘΗΚΗ του getTicket για να φέρνουμε τα full details
-import { getMyTickets, getTicket } from "@/services/ticketService";
+import { getMyTickets, getTicket, submitFeedback } from "@/services/ticketService";
 
 
 // Helper Functions
@@ -57,7 +57,10 @@ export default function CustomerDashboard() {
 
   //Rating Modal
   const [showRatingModal, setShowRatingModal] = useState(false);
-  const [hasRated, setHasRated] = useState(false); // To prevent duplicate popups in one session
+  const [ratedTicketIds, setRatedTicketIds] = useState(() => {
+    const stored = localStorage.getItem('ratedTicketIds');
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  }); // Track which tickets have been rated
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,7 +69,8 @@ export default function CustomerDashboard() {
   useEffect(() => {
   if (selectedTicket) {
     const status = normalizeStatus(selectedTicket.status);
-    if (status === "Completed" && !hasRated) {
+    const ticketId = selectedTicket._id || selectedTicket.id;
+    if (status === "Completed" && ticketId && !ratedTicketIds.has(ticketId)) {
       // Small delay so the user sees the "Completed" status in the main modal first
       const timer = setTimeout(() => {
         setShowRatingModal(true);
@@ -74,7 +78,7 @@ export default function CustomerDashboard() {
       return () => clearTimeout(timer);
     }
   }
-}, [selectedTicket, hasRated]);
+}, [selectedTicket, ratedTicketIds]);
 
   useEffect(() => {
     if (showModal) {
@@ -453,10 +457,23 @@ export default function CustomerDashboard() {
                       <button 
                         key={star} 
                         className="star-btn"
-                        onClick={() => {
-                          console.log(`Rating submitted: ${star}`); // Replace with your API call
-                          setHasRated(true);
-                          setShowRatingModal(false);
+                        onClick={async () => {
+                          try {
+                            const ticketId = selectedTicket._id || selectedTicket.id;
+                            await submitFeedback(ticketId, { rating: star, comment: "" });
+                            alert("Thank you for your feedback!");
+                            if (ticketId) {
+                              setRatedTicketIds(prev => {
+                                const newSet = new Set(prev).add(ticketId);
+                                localStorage.setItem('ratedTicketIds', JSON.stringify([...newSet]));
+                                return newSet;
+                              });
+                            }
+                            setShowRatingModal(false);
+                          } catch (error) {
+                            console.error("Feedback error", error);
+                            alert("Could not submit feedback. Please try again.");
+                          }
                         }}
                       >
                         ⭐
@@ -467,8 +484,15 @@ export default function CustomerDashboard() {
                   <button 
                     className="maybe-later-btn" 
                     onClick={() => {
+                      const ticketId = selectedTicket._id || selectedTicket.id;
+                      if (ticketId) {
+                        setRatedTicketIds(prev => {
+                          const newSet = new Set(prev).add(ticketId);
+                          localStorage.setItem('ratedTicketIds', JSON.stringify([...newSet]));
+                          return newSet;
+                        });
+                      }
                       setShowRatingModal(false);
-                      setHasRated(true); // Prevents re-popping in same session
                     }}
                   >
                     Maybe later

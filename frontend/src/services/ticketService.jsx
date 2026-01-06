@@ -81,3 +81,6 @@ export const getFeedbackStats = async () => {
   const response = await api.get('/tickets/analytics/kpi');
   return response.data;
 };
+
+// Alias for AdminDashboard compatibility
+export const getFeedbackKPIs = getFeedbackStats;

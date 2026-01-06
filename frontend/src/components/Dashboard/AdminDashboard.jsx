@@ -3,6 +3,8 @@ import { getAllTicketsAdmin } from "@/services/ticketService";
 import { getAllUsers, deleteUser, createUser, updateUser } from "@/services/authService"; 
 import styles from "./AdminDashboard.module.css";
 import { useNotification } from "@/context/NotificationContext";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { getFeedbackKPIs } from "@/services/ticketService";
 
 const AdminDashboard = () => {
   const { showNotification } = useNotification();
@@ -42,6 +44,10 @@ const AdminDashboard = () => {
     return saved ? parseInt(saved, 10) : 15;
   });
 
+  // --- Reports/KPI State ---
+  const [kpiData, setKpiData] = useState([]);
+  const COLORS = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e']; // Red to Green logic
+
 
   // --- LOAD DATA ---
   useEffect(() => {
@@ -60,6 +66,20 @@ const AdminDashboard = () => {
       }
     };
     loadData();
+  }, []);
+
+  // --- LOAD KPI DATA ---
+  useEffect(() => {
+    const fetchKPIs = async () => {
+      try {
+        const data = await getFeedbackKPIs();
+        setKpiData(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to fetch KPIs", err);
+        setKpiData([]);
+      }
+    };
+    fetchKPIs();
   }, []);
 
 
@@ -90,6 +110,27 @@ const AdminDashboard = () => {
     };
   }, [tickets]);
 
+  // --- REPORTS COMPUTED VALUES ---
+  const chartData = useMemo(() => {
+    const dataArray = Array.isArray(kpiData) ? kpiData : [];
+    return [1, 2, 3, 4, 5].map(num => {
+      const found = dataArray.find(d => d._id === num);
+      return { rating: `${num} Star`, count: found ? found.count : 0 };
+    });
+  }, [kpiData]);
+
+  const totalReviews = useMemo(() => {
+    const dataArray = Array.isArray(kpiData) ? kpiData : [];
+    return dataArray.reduce((acc, curr) => acc + curr.count, 0);
+  }, [kpiData]);
+
+  const avgRating = useMemo(() => {
+    const dataArray = Array.isArray(kpiData) ? kpiData : [];
+    return totalReviews > 0 
+      ? (dataArray.reduce((a, b) => a + (b._id * b.count), 0) / totalReviews).toFixed(1) 
+      : 0;
+  }, [kpiData, totalReviews]);
+
   // --- STATISTICS (USERS)  ---
   const userStats = useMemo(() => {
     const admins = users.filter(u => u.role === 'Admin').length;
@@ -100,6 +141,7 @@ const AdminDashboard = () => {
     
     return { admins, managers, technicians, employees, customers };
   }, [users]);
+
 
 
   // --- USER HANDLERS ---
@@ -287,6 +329,61 @@ const AdminDashboard = () => {
           </>
         );
 
+      // TAB 3: REPORTS
+      case "Reports":
+        return (
+          <div className={styles.reportsContainer}>
+            <div className={styles.statsGrid}>
+              <StatCard label="Total Feedbacks" value={totalReviews} icon="💬" color="#2563eb" />
+              <StatCard 
+                  label="Avg. Rating" 
+                  value={avgRating} 
+                  icon="⭐" 
+                  color="#eab308" 
+              />
+            </div>
+
+            
+
+            <div className={styles.chartGrid}>
+              <div className={styles.chartCard}>
+                <h3>Rating Distribution</h3>
+                <div className={styles.chartWrapper}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                      <XAxis dataKey="rating" axisLine={false} tickLine={false} />
+                      <YAxis axisLine={false} tickLine={false} />
+                      <Tooltip cursor={{fill: '#f8fafc'}} />
+                      <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                        {chartData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className={styles.chartCard}>
+                <h3>Satisfaction Mix</h3>
+                <div className={styles.chartWrapper}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={chartData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="count">
+                        {chartData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+        
       // TAB 4: SETTINGS
       case "Settings":
         return (

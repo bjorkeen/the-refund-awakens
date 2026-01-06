@@ -290,13 +290,13 @@ exports.getFeedbackKPIs = async (req, res) => {
       { $match: { "feedback.rating": { $exists: true } } },
       {
         $group: {
-          _id: null,
-          avgRating: { $avg: "$feedback.rating" },
+          _id: "$feedback.rating",
           count: { $sum: 1 }
         }
-      }
+      },
+      { $sort: { _id: 1 } }
     ]);
-    res.json(stats[0] || { avgRating: 0, count: 0 });
+    res.json(stats);
   } catch (err) {
     console.error("KPI Error:", err.message);
     res.status(500).send('Server Error');
