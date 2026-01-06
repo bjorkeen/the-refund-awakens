@@ -354,7 +354,7 @@
   transform: translateY(0);
 }
 
-/* --- LOGISTICS & SHIPPING STYLES --- */
+/*LOGISTICS & SHIPPING STYLES */
 
 /* Το container που κρατάει τα δύο κουτιά (Courier / Store) */
 .ct-logistics-options {
@@ -425,4 +425,97 @@
   .ct-logistics-options {
     flex-direction: column;
   }
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-box.success-modal {
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-icon {
+  font-size: 60px;
+  margin-bottom: 20px;
+}
+
+.modal-info-box {
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  color: #9a3412;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.modal-footer-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.full-width {
+  width: 100% !important;
+  padding: 14px !important;
+}
+
+/* Για την εκτύπωση: Κρύβουμε τα πάντα εκτός από το label αν χρειαστεί */
+@media print {
+  .ct-page, .modal-overlay { display: none; }
+}
+
+/* Το κουμπί ακύρωσης μέσα στο modal */
+.btn-modal-cancel {
+  width: 100%;
+  background-color: white;
+  color: #dc2626; /* Κόκκινο χρώμα */
+  border: 1px solid #fca5a5;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-modal-cancel:hover {
+  background-color: #fef2f2;
+  border-color: #ef4444;
+}
+
+/* Το κουμπί για το Dashboard (μικρότερο/δευτερεύον) */
+.btn-modal-ghost {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 13px;
+  padding: 8px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.btn-modal-ghost:hover {
+  color: #1e293b;
+}
+
+/* Βοηθητική κλάση για το κεντρικό κουμπί εκτύπωσης */
+.btn-full-width {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
 }

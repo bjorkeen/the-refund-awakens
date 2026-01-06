@@ -90,6 +90,7 @@ exports.createTicket = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Ticket created successfully",
+      _id: newTicket._id,
       ticketId: newTicket.ticketId,
       warrantyStatus,
       assignedRepairCenter: assignedTech ? assignedTech.fullName : "Pending Assignment",

@@ -8,7 +8,7 @@ import {
 import { useAccess } from "@/context/AccessContext";
 import "./TicketDetails.css";
 
-const STEPS = ["Submitted", "In Progress", "Completed", "Closed"];
+const STEPS = ['Submitted', 'Shipping', 'In Progress', 'Shipped Back', 'Completed'];
 
 export default function TicketDetailsPage() {
   const { id } = useParams();
@@ -213,45 +213,33 @@ export default function TicketDetailsPage() {
                 </div>
               </div>
 
-              <div className="td-sidebar">
-                <div className="td-section">
-                  <div className="td-section-title">Request Details</div>
-                  <div className="td-text">
-                    <strong>Type:</strong> {requestType} <br />
-                    <strong>Date:</strong>{" "}
-                    {new Date(ticket.createdAt).toLocaleDateString()}
-                  </div>
-                </div>
-
-                {/* controls if(user == Admin/Technician) */}
-                {(user.role === "Technician" || user.role === "Admin") && (
-                  <div className="td-section">
-                    <div
-                      className="td-section-title"
-                      style={{ color: "#0369a1" }}
-                    >
-                      Action
+                <div className="td-sidebar">
+                    <div className="td-section">
+                        <div className="td-section-title">Request Details</div>
+                        <div className="td-text">
+                            <strong>Type:</strong> {requestType} <br/>
+                            <strong>Date:</strong> {new Date(ticket.createdAt).toLocaleDateString()}
+                        </div>
                     </div>
-                    <select
-                      value={ticket.status}
-                      onChange={handleStatusChange}
-                      style={{ padding: "5px", width: "100%" }}
-                    >
-                      <option value="Submitted">Submitted</option>
-                      <option value="Pending Validation">
-                        Pending Validation
-                      </option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Waiting for Parts">
-                        Waiting for Parts
-                      </option>
-                      <option value="Completed">Completed</option>
-                      <option value="Closed">Closed</option>
-                      <option value="Cancelled">Cancelled</option>
-                    </select>
-                  </div>
-                )}
-              </div>
+                    
+                    {/* Τεχνικά controls (αν ο χρήστης είναι Admin/Technician) */}
+                    {(user.role === 'Technician' || user.role === 'Admin') && (
+                        <div className="td-section">
+                            <div className="td-section-title" style={{color:'#0369a1'}}>Action</div>
+                            <select value={ticket.status} onChange={handleStatusChange} style={{padding:'5px', width:'100%'}}>
+                                <option value="Submitted">Submitted</option>
+                                <option value="Shipping">Shipping</option>
+                                <option value="Pending Validation">Pending Validation</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Waiting for Parts">Waiting for Parts</option>
+                                <option value="Shipped Back">Shipped Back</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Closed">Closed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    )}
+                </div>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { createTicket } from "@/services/ticketService";
+import { createTicket, updateTicketStatus } from "@/services/ticketService";
 //filippa import
 import { useAccess } from "@/context/AccessContext"; 
 import "./CreateTicketForm.css";
@@ -51,7 +51,7 @@ export default function CreateTicket() {
     //filippa new fields
     contactName: "",  
     contactEmail: "",
-    phone: "",
+    contactPhone: "",
     // Address fields (Θα χρησιμοποιηθούν μόνο αν deliveryMethod === 'courier')
     address: "",     
     city: "",        
@@ -113,6 +113,9 @@ export default function CreateTicket() {
   
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdTicketId, setCreatedTicketId] = useState("");
+  const [ticketDbId, setTicketDbId] = useState("");
 
   // --- filippa: LOGIC CHECKS (Warranty & Return) ---
   const daysSincePurchase = useMemo(() => {
@@ -158,7 +161,11 @@ export default function CreateTicket() {
     const isFormValid = 
       formData.contactName.trim().length > 0 &&
       formData.contactEmail.trim().length > 0 &&
+      formData.contactPhone.trim().length > 0 &&
+      formData.model.trim().length > 0 &&
       formData.purchaseDate.trim().length > 0 &&
+      formData.type.trim().length > 0 &&
+      formData.category.trim().length > 0 &&
       formData.serialNumber.trim().length > 0 &&
       formData.description.trim().length >= 10;
       
@@ -232,6 +239,7 @@ const handleAddScript = (text) => {
         deliveryMethod,
         contactName: formData.contactName,
         contactEmail: formData.contactEmail,
+        contactPhone: formData.contactPhone,
         address: deliveryMethod === 'dropoff' ? 'Store Drop-off' : formData.address,
         city: deliveryMethod === 'dropoff' ? '-' : formData.city,
         postalCode: deliveryMethod === 'dropoff' ? '-' : formData.postalCode,
@@ -248,13 +256,39 @@ const handleAddScript = (text) => {
         photos: photoFiles, 
       };
 
-      await createTicket(payload);
-      navigate("/dashboard");
+      // 3. Create Ticket & Get Response
+      const response = await createTicket(payload);
+      
+      // Αποθήκευση του ID για το shipping label
+      setTicketDbId(response._id || "");
+      setCreatedTicketId(response.ticketId || "TKT-NEW");
+      
+      // Εμφάνιση του επιβεβαιωτικού Modal
+      setShowSuccessModal(true);
+
     } catch (err) {
       console.error(err);
       setError(typeof err === "string" ? err : "Server error while creating ticket.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handlePrintAndShip = async () => {
+    try {
+      // Ενημερώνουμε το status σε Shipping ώστε να μην μπορεί να ακυρωθεί από το dashboard
+      await updateTicketStatus(ticketDbId, "Shipping");
+      
+      // Ανοίγει το παράθυρο εκτύπωσης του browser
+      window.print();
+      
+      // Μετά την εκτύπωση, ανακατεύθυνση στο dashboard
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Shipping update failed", err);
+      // Ακόμα και αν αποτύχει το API update, αφήνουμε την εκτύπωση για να μην κολλήσει ο πελάτης
+      window.print();
+      navigate("/dashboard");
     }
   };
 
@@ -300,7 +334,7 @@ const handleAddScript = (text) => {
                 </div>
                 <div className="ct-field">
                     <label className="ct-label">Phone Number <span className="ct-required">*</span></label>
-                    <input className="ct-input" type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleChange} placeholder="Enter your phone number" required />
+                  <input className="ct-input" type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleChange} placeholder="Enter your phone number" required />
                 </div>
             </div>
           </div>
@@ -369,8 +403,8 @@ const handleAddScript = (text) => {
             </div>
             <div className="ct-grid">
               <div className="ct-field">
-                <label className="ct-label">Product Model</label>
-                <input className="ct-input" name="model" value={formData.model} onChange={handleChange} />
+                <label className="ct-label">Product Model <span className="ct-required">*</span></label>
+                <input className="ct-input" name="model" value={formData.model} onChange={handleChange} required />
               </div>
               <div className="ct-field">
                 <label className="ct-label">Purchase Date <span className="ct-required">*</span></label>
@@ -384,8 +418,8 @@ const handleAddScript = (text) => {
               </div>
             </div>
             <div className="ct-field">
-              <label className="ct-label">Product Type</label>
-              <select className="ct-select" name="type" value={formData.type} onChange={handleChange}>
+              <label className="ct-label">Product Type <span className="ct-required">*</span></label>
+              <select className="ct-select" name="type" value={formData.type} onChange={handleChange} required>
                 <option value="">Select product type</option>
                 {PRODUCT_TYPES.map((t) => (<option key={t} value={t}>{t}</option>))}
               </select>
@@ -404,8 +438,8 @@ const handleAddScript = (text) => {
           <div className="ct-section">
             <h2 className="ct-section-title">Issue Details</h2>
             <div className="ct-field">
-              <label className="ct-label">Problem Category</label>
-              <select className="ct-select" name="category" value={formData.category} onChange={handleChange}>
+              <label className="ct-label">Problem Category <span className="ct-required">*</span></label>
+              <select className="ct-select" name="category" value={formData.category} onChange={handleChange} required>
                 <option value="">Select a category</option>
                 {CATEGORIES.map((c) => (<option key={c} value={c}>{c}</option>))}
               </select>
@@ -521,6 +555,44 @@ const handleAddScript = (text) => {
           </div>
         </form>
       </div>
+      {/* filippa: Print & Ship Modal */}
+      {showSuccessModal && (
+      <div className="modal-overlay">
+        <div className="modal-box success-modal">
+          <div className="modal-icon">📦</div>
+          <h2>Αίτημα #{createdTicketId}</h2>
+          <p>Το αίτημά σας δημιουργήθηκε επιτυχώς! Εκτυπώστε το label για να προχωρήσουμε.</p>
+          
+          <div className="modal-info-box">
+            <strong>Προσοχή:</strong> Με την εκτύπωση, το status γίνεται <b>Shipping</b> και η ακύρωση κλειδώνει.
+          </div>
+
+          <div className="modal-footer-btns">
+            {/* ΚΥΡΙΟ ΚΟΥΜΠΙ */}
+            <button className="ct-btn ct-btn-primary btn-full-width" onClick={handlePrintAndShip}>
+              Print Shipping Label & Ship Now
+            </button>
+
+            {/* ΚΟΥΜΠΙ ΑΚΥΡΩΣΗΣ  */}
+            <button 
+              className="btn-modal-cancel" 
+              onClick={async () => {
+                if(window.confirm("Θέλετε σίγουρα να ακυρώσετε αυτό το αίτημα;")) {
+                  try {
+                    await updateTicketStatus(ticketDbId, "Cancelled");
+                    setShowSuccessModal(false);
+                  } catch (err) {
+                    setShowSuccessModal(false);
+                  }
+                }
+              }}
+            >
+              Cancel This Request
+            </button>
+          </div>
+        </div>
+  </div>
+)}
     </div>
   );
 }
