@@ -17,15 +17,6 @@ const checkWarranty = (purchaseDate, serviceType) => {
   }
 };
 
-const assignRepairCenter = (productType) => {
-  switch (productType) {
-    case "Smartphone": return "Repair Center A";
-    case "Laptop": return "Repair Center B";
-    case "TV": return "Repair Center C";
-    default: return "Deferred Assignment Queue";
-  }
-};
-
 exports.createTicket = async (req, res) => {
   try {
     const {
@@ -45,10 +36,54 @@ exports.createTicket = async (req, res) => {
     //filippa warranty check execution
     const warrantyStatus = checkWarranty(purchaseDate, serviceType);
 
-    let assignedTech = await User.findOne({ role: "Technician", specialty: type });
-    if (!assignedTech) {
-      assignedTech = await User.findOne({ role: "Technician", specialty: "Other" });
+    //christos smart assignment logic start
+    console.log(`--- Assignment Logic Triggered for Type: ${type} ---`);
+    
+    // Find technicians with matching specialty
+    const eligibleTechs = await User.find({ role: "Technician", specialty: type });
+    console.log(`Found ${eligibleTechs.length} techs for ${type}`);
+
+    let assignedTech = null;
+
+    //check workload less than 5 active tickets
+    for (const tech of eligibleTechs) {
+      const activeTickets = await Ticket.countDocuments({
+        assignedRepairCenter: tech._id,
+        // christos fix: Count EVERYTHING except closed/completed tickets (so Shipped is counted)
+        status: { 
+          $nin: ['Completed', 'Closed', 'Cancelled', 'Rejected'] 
+        }
+      });
+      
+      console.log(`Tech ${tech.fullName} has ${activeTickets} active tickets.`);
+
+      if (activeTickets < 5) {
+        assignedTech = tech;
+        console.log(`-> Assigning to ${tech.fullName}`);
+        break; 
+      }
     }
+
+    //fallback to "other" specialty if primary techs are full
+    if (!assignedTech) {
+      console.log("Primary techs full or not found. Checking 'Other'...");
+      const generalTechs = await User.find({ role: "Technician", specialty: "Other" });
+      
+      for (const tech of generalTechs) {
+        const activeTickets = await Ticket.countDocuments({
+          assignedRepairCenter: tech._id,
+          // christos fix: Same fix for fallback technicians
+          status: { $nin: ['Completed', 'Closed', 'Cancelled', 'Rejected'] }
+        });
+
+        if (activeTickets < 5) {
+          assignedTech = tech;
+          console.log(`-> Assigned to General Tech: ${tech.fullName}`);
+          break;
+        }
+      }
+    }
+    //end assignment logic
 
     const ticketId = `TKT-${Date.now()}`;
     
@@ -116,7 +151,6 @@ exports.getMyTickets = async (req, res) => {
 };
 
 // despoina all tickets for staff 
-
 exports.getAllTickets = async (req, res) => {
   try {
     const tickets = await Ticket.find()
@@ -129,8 +163,8 @@ exports.getAllTickets = async (req, res) => {
     res.status(500).json({ message: "Error fetching all tickets" });
   }
 };
-//despoina assign technician to ticket
 
+//despoina assign technician to ticket
 exports.assignTechnician = async (req, res) => {
   try {
     const { technicianId } = req.body;
@@ -160,12 +194,12 @@ exports.getAllTicketsAdmin = async (req, res) => {
     // Φέρνουμε όλα τα tickets και κάνουμε populate τα στοιχεία του πελάτη και του τεχνικού
     const tickets = await Ticket.find({})
       .populate('customer', 'fullName email')
-      .populate('assignedRepairCenter', 'fullName')
+      .populate('assignedRepairCenter', 'fullName email specialty')
       .sort({ createdAt: -1 });
     
     res.json(tickets);
   } catch (error) {
-    res.status(500).json({ message: "Σφάλμα κατά την ανάκτηση όλων των tickets" });
+    res.status(500).json({ message: "Error fetching tickets" });
   }
 };
 
@@ -197,25 +231,29 @@ exports.updateTicketStatus = async (req, res) => {
 exports.getTicketById = async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id)
-  .populate('customer', 'fullName email')
-  .populate('assignedRepairCenter', 'fullName')
-  .populate('internalComments.by', 'fullName email role');
+      .populate('customer', 'fullName email')
+      // christos: populate full technician details for sidebar
+      .populate('assignedRepairCenter', 'fullName email specialty')
+      .populate('internalComments.by', 'fullName email role');
 
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
     if (req.user.role === 'Customer' && ticket.customer._id.toString() !== req.user.userId) {
       return res.status(401).json({ message: 'Not authorized' });
     }
-if (req.user.role === 'Customer') {
-  const t = ticket.toObject();
-  delete t.internalComments;
-  return res.json(t);
-}
+    
+    if (req.user.role === 'Customer') {
+      const t = ticket.toObject();
+      delete t.internalComments;
+      return res.json(t);
+    }
+    
     res.json(ticket);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 // Add internal comment to ticket 
 exports.addInternalComment = async (req, res) => {
   try {

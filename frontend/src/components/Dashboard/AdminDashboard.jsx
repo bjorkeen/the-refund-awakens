@@ -26,6 +26,7 @@ const AdminDashboard = () => {
   const [formData, setFormData] = useState({
     fullName: "", email: "", password: "", role: "Technician", specialty: "Smartphone",
   });
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
 
   // --- Delete Modal State ---
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -42,19 +43,24 @@ const AdminDashboard = () => {
     return saved ? parseInt(saved, 10) : 15;
   });
 
-
   // --- LOAD DATA ---
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
+      // 1. Φόρτωση Users
       try {
-        const [ticketsData, usersData] = await Promise.all([
-          getAllTicketsAdmin(),
-          getAllUsers(),
-        ]);
-        setTickets(Array.isArray(ticketsData) ? ticketsData : []);
+        const usersData = await getAllUsers();
         setUsers(Array.isArray(usersData) ? usersData : []);
       } catch (err) {
-        console.error("Fetch error:", err);
+        console.error("Users error:", err);
+      }
+
+      // 2. Φόρτωση Tickets
+      try {
+        const ticketsData = await getAllTicketsAdmin();
+        setTickets(Array.isArray(ticketsData) ? ticketsData : []);
+      } catch (err) {
+        console.error("Tickets error:", err);
       } finally {
         setLoading(false);
       }
@@ -63,7 +69,7 @@ const AdminDashboard = () => {
   }, []);
 
 
-  // --- STATISTICS (TICKETS) ---
+  // --- STATISTICS CALCULATIONS ---
   const filteredTickets = useMemo(() => {
     return tickets.filter((t) => {
       const matchesSearch =
@@ -90,7 +96,6 @@ const AdminDashboard = () => {
     };
   }, [tickets]);
 
-  // --- STATISTICS (USERS)  ---
   const userStats = useMemo(() => {
     const admins = users.filter(u => u.role === 'Admin').length;
     const managers = users.filter(u => u.role === 'Manager').length;
@@ -102,7 +107,7 @@ const AdminDashboard = () => {
   }, [users]);
 
 
-  // --- USER HANDLERS ---
+  // --- HANDLERS ---
   const initiateDelete = (user) => {
     setUserToDelete(user);
     setShowDeleteConfirm(true);
@@ -182,11 +187,9 @@ const AdminDashboard = () => {
 
   if (loading) return <div className={styles.loading}>Loading System...</div>;
 
-  // --- RENDER CONTENT ---
+  // --- RENDER ---
   const renderTabContent = () => {
     switch (activeTab) {
-      
-      // TAB 1: OVERVIEW
       case "Overview":
         return (
           <>
@@ -196,7 +199,6 @@ const AdminDashboard = () => {
               <StatCard label="Completed" value={stats.completed} icon="✅" color="#10b981" />
               <StatCard label="In Warranty" value={stats.underWarranty} icon="🛡️" color="#3b82f6" />
             </div>
-
             <div className={styles.chartsGrid}>
               <div className={styles.chartCard}>
                 <h3>Efficiency Rate</h3>
@@ -213,7 +215,6 @@ const AdminDashboard = () => {
                 <span className={styles.progressValue}>{stats.warrantyRate.toFixed(1)}% Under Guarantee</span>
               </div>
             </div>
-
             <div className={styles.tableSection}>
               <div className={styles.sectionHeader}>
                 <h2>Recent Activity (Last 5)</h2>
@@ -224,7 +225,6 @@ const AdminDashboard = () => {
           </>
         );
 
-      // TAB 2: ALL TICKETS
       case "All Tickets":
         return (
           <div className={styles.tableSection}>
@@ -244,11 +244,9 @@ const AdminDashboard = () => {
           </div>
         );
 
-      // TAB 3: USER MANAGEMENT (UPDATED)
       case "User Management":
         return (
           <>
-            {/* USER STATS */}
             <div className={styles.statsGrid} style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
               <StatCard label="Admins" value={userStats.admins} icon="🛡️" color="#7e22ce" />
               <StatCard label="Managers" value={userStats.managers} icon="💼" color="#f59e0b" />
@@ -257,7 +255,6 @@ const AdminDashboard = () => {
               <StatCard label="Customers" value={userStats.customers} icon="👥" color="#64748b" />
             </div>
 
-            {/* USER TABLE */}
             <div className={styles.tableSection}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
                 <h2>System Users</h2>
@@ -287,7 +284,6 @@ const AdminDashboard = () => {
           </>
         );
 
-      // TAB 4: SETTINGS
       case "Settings":
         return (
           <div className={styles.settingsWrapper}>
@@ -296,7 +292,6 @@ const AdminDashboard = () => {
               <p className={styles.subLabel}>Configure system-wide settings and rules</p>
             </header>
 
-            {/* Warranty Rules */}
             <section className={styles.settingsSection}>
               <h3><span>⚙️</span> Warranty Rules</h3>
               <div className={styles.formGroup}>
@@ -325,40 +320,39 @@ const AdminDashboard = () => {
                 </p>
               </div>
             </section>
-            <section className={styles.settingsSection}>
-            <h3><span>🔄</span> Return Policy</h3>
             
-            <div className={styles.formGroup}>
-              <label className={styles.statLabel}>Return Eligibility Window</label>
-              <div className={styles.inlineInputGroup}>
-                <input 
-                  type="number" 
-                  value={returnPolicyDays} 
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value, 10) || 0;
-                    setReturnPolicyDays(value);
-                    localStorage.setItem('returnPolicyDays', value.toString());
-                  }}
-                  className={styles.searchInput} 
-                  style={{ width: '100px' }} 
-                  min="1"
-                />
-                <span className={styles.subLabel}>Days from date of purchase</span>
-              </div>
-            </div>
+            <section className={styles.settingsSection}>
+                <h3><span>🔄</span> Return Policy</h3>
+                <div className={styles.formGroup}>
+                <label className={styles.statLabel}>Return Eligibility Window</label>
+                <div className={styles.inlineInputGroup}>
+                    <input 
+                    type="number" 
+                    value={returnPolicyDays} 
+                    onChange={(e) => {
+                        const value = parseInt(e.target.value, 10) || 0;
+                        setReturnPolicyDays(value);
+                        localStorage.setItem('returnPolicyDays', value.toString());
+                    }}
+                    className={styles.searchInput} 
+                    style={{ width: '100px' }} 
+                    min="1"
+                    />
+                    <span className={styles.subLabel}>Days from date of purchase</span>
+                </div>
+                </div>
 
-            <div className={styles.returnRuleBox}>
-              <p className={styles.returnRuleTitle}>Return Policy Logic Check</p>
-              <p className={styles.returnRuleText}>
-                IF (days_since_purchase) ≤ {returnPolicyDays} → <span className={styles.returnEligible}>ELIGIBLE</span>
-              </p>
-              <p className={styles.returnRuleText}>
-                IF (days_since_purchase) {'>'} {returnPolicyDays} → <span className={styles.returnExpired}>EXPIRED</span>
-              </p>
-            </div>
-          </section>
+                <div className={styles.returnRuleBox}>
+                <p className={styles.returnRuleTitle}>Return Policy Logic Check</p>
+                <p className={styles.returnRuleText}>
+                    IF (days_since_purchase) ≤ {returnPolicyDays} → <span className={styles.returnEligible}>ELIGIBLE</span>
+                </p>
+                <p className={styles.returnRuleText}>
+                    IF (days_since_purchase) {'>'} {returnPolicyDays} → <span className={styles.returnExpired}>EXPIRED</span>
+                </p>
+                </div>
+            </section>
 
-            {/* Notification Templates */}
             <section className={styles.settingsSection}>
               <h3>Notification Templates</h3>
               <div className={styles.formGroup}>
@@ -376,26 +370,13 @@ const AdminDashboard = () => {
               </div>
             </section>
 
-            {/* SLA Configuration */}
-            <section className={styles.settingsSection}>
-              <h3>SLA Configuration</h3>
-              <div className={styles.chartsGrid}>
-                {['Low', 'Medium', 'High', 'Urgent'].map(level => (
-                  <div key={level} className={styles.formGroup}>
-                    <label className={styles.statLabel}>{level} Priority</label>
-                    <input type="number" className={styles.searchInput} placeholder="Days" />
-                    <p className={styles.subLabel}>Business days</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
             <div className={styles.saveActions}>
               <button className={styles.btnSubmit} style={{ padding: '10px 30px' }}>Save Settings</button>
             </div>
           </div>
         );
 
+      case "Reports":
       default:
         return (
           <div className={styles.placeholderView}>
@@ -438,7 +419,7 @@ const AdminDashboard = () => {
                 <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
               </div>
               
-                <div className={styles.formGroup}>
+              <div className={styles.formGroup}>
                 <div className={styles.passwordHeader}>
                     <label style={{marginBottom: 0}}>Password</label>
                     {isEditing && (
@@ -497,7 +478,7 @@ const AdminDashboard = () => {
         </div>
       )}
 
-{/* --- CONFIRM DELETE MODAL --- */}
+      {/* --- CONFIRM DELETE MODAL --- */}
       {showDeleteConfirm && (
         <div className={styles.modalOverlay}>
           <div className={`${styles.modalContent} ${styles.deleteModalContent}`}>
@@ -516,7 +497,6 @@ const AdminDashboard = () => {
   );
 };
 
-// Sub-components
 const TicketTable = ({ data }) => (
   <table className={styles.miniTable}>
     <thead>
