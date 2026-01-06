@@ -41,9 +41,6 @@ const Header = () => {
         </>
       )}
 
-
-                <button onClick={handleLogout} className={styles.authButton}>Sign Out</button>
-
               <div className={styles.dropdownContainer}>
                 <button className={styles.profileIconBtn} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>👤</button>
                 {isDropdownOpen && (
