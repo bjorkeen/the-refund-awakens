@@ -60,6 +60,7 @@ export default function CreateTicket() {
     city: "",        
     postalCode: "", 
     country: "",
+    customerSelection: "",
     //standard fields
     serialNumber: "",
     model: "",
@@ -240,6 +241,7 @@ const handleAddScript = (text) => {
         //filippa fields
         serviceType: mode,
         deliveryMethod,
+        customerSelection: mode === 'Return' ? formData.customerSelection : 'None', 
         contactName: formData.contactName,
         contactEmail: formData.contactEmail,
         contactPhone: formData.contactPhone,
@@ -435,6 +437,26 @@ const handleAddScript = (text) => {
                 {PRODUCT_TYPES.map((t) => (<option key={t} value={t}>{t}</option>))}
               </select>
             </div>
+            {/* Resolution Preference Dropdown (Only for Returns) */}
+            {mode === 'Return' && (
+                <div className="ct-field">
+                    <label className="ct-label">Resolution Preference <span className="ct-required">*</span></label>
+                    <select 
+                        className="ct-select" 
+                        name="customerSelection" 
+                        value={formData.customerSelection} 
+                        onChange={handleChange} 
+                        required
+                    >
+                        <option value="">Select an option</option>
+                        <option value="Refund">I want a Refund</option>
+                        <option value="Replacement">I want a Replacement</option>
+                    </select>
+                    <p className="ct-help" style={{marginTop:'4px'}}>
+                        * Available only if purchased within the last {returnPolicyDays} days.
+                    </p>
+                </div>
+            )}
             <div className="ct-field">
                 <label className="ct-label">Upload Invoice (Optional)</label>
                 <label className="ct-dropzone">

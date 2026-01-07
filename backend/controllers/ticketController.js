@@ -1,17 +1,17 @@
 const Ticket = require("../models/Ticket");
 const User = require("../models/User");
 
-//filippa warranty check logic (15 days vs 24 months)
+// logic : warranty check helper (15 days vs 24 months)
 const checkWarranty = (purchaseDate, serviceType) => {
   const today = new Date();
   const pDate = new Date(purchaseDate);
 
-  const diffTime = Math.abs(today - pDate);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-
   if (serviceType === 'Return') {
+    const diffTime = Math.abs(today - pDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
     return diffDays <= 15 ? 'Eligible for Return' : 'Return Period Expired';
   } else {
+    // logic : standard 24 month warranty for repairs
     const diffMonths = (today.getFullYear() - pDate.getFullYear()) * 12 + (today.getMonth() - pDate.getMonth());
     return diffMonths <= 24 ? 'Under Warranty' : 'Out of Warranty';
   }
@@ -20,7 +20,6 @@ const checkWarranty = (purchaseDate, serviceType) => {
 exports.createTicket = async (req, res) => {
   try {
     const {
-      //filippa new fields destructuring
       serviceType,
       deliveryMethod,
       contactName,
@@ -29,6 +28,7 @@ exports.createTicket = async (req, res) => {
       address,
       city,
       postalCode,
+      customerSelection, 
       
       serialNumber,
       model,
@@ -38,79 +38,88 @@ exports.createTicket = async (req, res) => {
       description,
     } = req.body;
 
-    //filippa warranty check execution
+    // logic : execute warranty check
     const warrantyStatus = checkWarranty(purchaseDate, serviceType);
 
-    //christos smart assignment logic start
-    console.log(`--- Assignment Logic Triggered for Type: ${type} ---`);
-    
-    // Find technicians with matching specialty
-    const eligibleTechs = await User.find({ role: "Technician", specialty: type });
-    console.log(`Found ${eligibleTechs.length} techs for ${type}`);
-
     let assignedTech = null;
+    let resolutionOptions = [];
+    let initialStatus = "Submitted";
 
-    //check workload less than 5 active tickets
-    for (const tech of eligibleTechs) {
-      const activeTickets = await Ticket.countDocuments({
-        assignedRepairCenter: tech._id,
-        // christos fix: Count EVERYTHING except closed/completed tickets (so Shipped is counted)
-        status: { 
-          $nin: ['Completed', 'Closed', 'Cancelled', 'Rejected'] 
-        }
-      });
+    if (serviceType === 'Return') {
+      // logic : calculate days since purchase
+      const pDate = new Date(purchaseDate);
+      const diffDays = Math.ceil((new Date() - pDate) / (1000 * 60 * 60 * 24));
       
-      console.log(`Tech ${tech.fullName} has ${activeTickets} active tickets.`);
-
-      if (activeTickets < 5) {
-        assignedTech = tech;
-        console.log(`-> Assigning to ${tech.fullName}`);
-        break; 
+      // logic : hard block if return period > 15 days
+      if (diffDays > 15) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Return period expired (15 days). Please submit a Repair request instead." 
+        });
       }
-    }
 
-    //fallback to "other" specialty if primary techs are full
-    if (!assignedTech) {
-      console.log("Primary techs full or not found. Checking 'Other'...");
-      const generalTechs = await User.find({ role: "Technician", specialty: "Other" });
+      // logic : set resolution options for valid returns
+      resolutionOptions = ['Refund', 'Replacement'];
       
-      for (const tech of generalTechs) {
+      // logic : returns skip auto-assignment to wait for staff validation
+      initialStatus = "Pending Validation";
+      assignedTech = null; 
+
+    } else {
+      // logic : smart assignment logic for repairs
+      resolutionOptions = ['Repair'];
+      initialStatus = "Submitted"; 
+
+      // logic : find technicians with matching specialty
+      const eligibleTechs = await User.find({ role: "Technician", specialty: type });
+
+      // logic : check workload less than 5 active tickets
+      for (const tech of eligibleTechs) {
         const activeTickets = await Ticket.countDocuments({
           assignedRepairCenter: tech._id,
-          // christos fix: Same fix for fallback technicians
+          // logic : exclude completed/closed tickets from workload count
           status: { $nin: ['Completed', 'Closed', 'Cancelled', 'Rejected'] }
         });
-
+        
         if (activeTickets < 5) {
           assignedTech = tech;
-          console.log(`-> Assigned to General Tech: ${tech.fullName}`);
-          break;
+          break; 
+        }
+      }
+
+      // logic : fallback to general technician if specialists are full
+      if (!assignedTech) {
+        const generalTechs = await User.find({ role: "Technician", specialty: "Other" });
+        for (const tech of generalTechs) {
+          const activeTickets = await Ticket.countDocuments({
+            assignedRepairCenter: tech._id,
+            status: { $nin: ['Completed', 'Closed', 'Cancelled', 'Rejected'] }
+          });
+          if (activeTickets < 5) {
+            assignedTech = tech;
+            break;
+          }
         }
       }
     }
-    //end assignment logic
 
     const ticketId = `TKT-${Date.now()}`;
-    
-    //christos extract file paths from middleware
+    // logic : extract file paths
     const filePaths = req.body.attachments || []; 
 
     const newTicket = new Ticket({
       customer: req.user.userId,
       ticketId,
       
-      //filippa service and contact info assignment
       serviceType: serviceType || 'Repair',
       deliveryMethod: deliveryMethod || 'courier',
-      contactName: contactName || 'N/A',
-      contactEmail: contactEmail || 'N/A',
-      phone: contactPhone || 'N/A',
-      address: address || '',
-      city: city || '',
-      postalCode: postalCode || '',
       contactInfo: {
         fullName: contactName || 'N/A',
-        email: contactEmail || 'N/A'
+        email: contactEmail || 'N/A',
+        phone: contactPhone || 'N/A',
+        address: address || '',
+        city: city || '',
+        postalCode: postalCode || ''
       },
 
       product: { serialNumber, model, purchaseDate, type },
@@ -118,17 +127,20 @@ exports.createTicket = async (req, res) => {
       issue: {
         category,
         description,
-        //christos attach correct file paths
         attachments: filePaths, 
       },
 
       warrantyStatus,
+      resolutionOptions,
+      customerSelection: customerSelection || 'None',
+      
+      status: initialStatus,
       assignedRepairCenter: assignedTech ? assignedTech._id : null,
-      status: "Submitted",
+
       history: [{
           action: "Ticket Created",
           by: req.user.userId,
-          notes: "Initial submission by customer",
+          notes: `Initial submission as ${serviceType}`,
       }],
     });
 
@@ -140,6 +152,7 @@ exports.createTicket = async (req, res) => {
       _id: newTicket._id,
       ticketId: newTicket.ticketId,
       warrantyStatus,
+      resolutionOptions, 
       assignedRepairCenter: assignedTech ? assignedTech.fullName : "Pending Assignment",
       uploadedFiles : filePaths 
     });
@@ -154,89 +167,9 @@ exports.getMyTickets = async (req, res) => {
     const tickets = await Ticket.find({ customer: req.user.userId })
       .select("-internalComments")
       .sort({ createdAt: -1 });
-
     res.json(tickets);
   } catch (error) {
-    console.error("Error fetching user tickets:", error);
     res.status(500).json({ message: "Server error fetching tickets" });
-  }
-};
-
-// despoina all tickets for staff 
-exports.getAllTickets = async (req, res) => {
-  try {
-    const tickets = await Ticket.find()
-      .populate('customer', 'fullName email') 
-      .sort({ createdAt: -1 });
-
-    res.json(tickets);
-  } catch (error) {
-    console.error("Error fetching all tickets:", error);
-    res.status(500).json({ message: "Error fetching all tickets" });
-  }
-};
-
-//despoina assign technician to ticket
-exports.assignTechnician = async (req, res) => {
-  try {
-    const { technicianId } = req.body;
-    const ticket = await Ticket.findById(req.params.id);
-    
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
-
-    ticket.assignedRepairCenter = technicianId; // Αναθέτουμε τον τεχνικό
-    
-    // Προσθήκη στο ιστορικό
-    ticket.history.push({
-      action: "Technician Assigned",
-      by: req.user.userId,
-      notes: `Assigned to technician ID: ${technicianId}`
-    });
-
-    await ticket.save();
-    res.json({ success: true, message: "Technician assigned successfully", ticket });
-  } catch (error) {
-    res.status(500).json({ message: 'Error assigning technician' });
-  }
-};
-
-// despoina all tickets for manager
-exports.getAllTicketsAdmin = async (req, res) => {
-  try {
-    // Φέρνουμε όλα τα tickets και κάνουμε populate τα στοιχεία του πελάτη και του τεχνικού
-    const tickets = await Ticket.find({})
-      .populate('customer', 'fullName email')
-      .populate('assignedRepairCenter', 'fullName email specialty')
-      .sort({ createdAt: -1 });
-    
-    res.json(tickets);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching tickets" });
-  }
-};
-
-exports.getAssignedTickets = async (req, res) => {
-  try {
-    const tickets = await Ticket.find({ assignedRepairCenter: req.user.userId })
-      .populate('customer', 'fullName email') 
-      .sort({ createdAt: -1 });
-    res.json(tickets);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching assigned tickets' });
-  }
-};
-
-exports.updateTicketStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
-    const ticket = await Ticket.findById(req.params.id);
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
-
-    ticket.status = status;
-    await ticket.save();
-    res.json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error updating status' });
   }
 };
 
@@ -244,7 +177,6 @@ exports.getTicketById = async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id)
       .populate('customer', 'fullName email')
-      // christos: populate full technician details for sidebar
       .populate('assignedRepairCenter', 'fullName email specialty')
       .populate('internalComments.by', 'fullName email role');
 
@@ -266,49 +198,103 @@ exports.getTicketById = async (req, res) => {
   }
 };
 
-// Add internal comment to ticket 
-exports.addInternalComment = async (req, res) => {
+exports.getAllTickets = async (req, res) => {
   try {
-    const { text } = req.body;
-
-    if (!text || !text.trim()) {
-      return res.status(400).json({ message: "Comment text is required." });
-    }
-
-    const ticket = await Ticket.findById(req.params.id);
-
-    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
-
-    ticket.internalComments = ticket.internalComments || [];
-    ticket.internalComments.push({
-      text: text.trim(),
-      by: req.user.userId
-    });
-
-    await ticket.save();
-
-    // Return updated ticket (populate comment authors)
-    const updated = await Ticket.findById(req.params.id)
-      .populate("customer", "fullName email")
-      .populate("internalComments.by", "fullName role email");
-
-    res.json(updated);
+    // logic: ensure customers cannot access this route (redundant if middleware exists but safe)
+    if (req.user.role === 'Customer') return res.status(403).json({ message: "Access denied" });
+    
+    const tickets = await Ticket.find()
+      .populate('customer', 'fullName email')
+      .populate('assignedRepairCenter', 'fullName email specialty')
+      .sort({ createdAt: -1 });
+    res.json(tickets);
   } catch (error) {
-    console.error("Error adding internal comment:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Error fetching all tickets" });
   }
 };
 
+exports.getAllTicketsAdmin = exports.getAllTickets;
+
+exports.updateTicketStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+    ticket.history.push({
+        action: "Status Updated",
+        by: req.user.userId,
+        notes: `Status changed from ${ticket.status} to ${status}`
+    });
+
+    ticket.status = status;
+    await ticket.save();
+    res.json(ticket);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error updating status' });
+  }
+};
+
+exports.addInternalComment = async (req, res) => {
+  try {
+    const { text } = req.body;
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+
+    ticket.internalComments.push({ by: req.user.userId, text });
+    await ticket.save();
+    
+    const updated = await Ticket.findById(req.params.id)
+      .populate("internalComments.by", "fullName role");
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: "Error adding comment" });
+  }
+};
+
+exports.getAssignedTickets = async (req, res) => {
+  try {
+    const tickets = await Ticket.find({ assignedRepairCenter: req.user.userId })
+      .populate('customer', 'fullName email') 
+      .sort({ createdAt: -1 });
+    res.json(tickets);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching assigned tickets' });
+  }
+};
+
+// logic : manual technician assignment by staff
+exports.assignTechnician = async (req, res) => {
+  try {
+    const { technicianId } = req.body;
+    const ticket = await Ticket.findById(req.params.id);
+    
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+    ticket.assignedRepairCenter = technicianId;
+    
+    ticket.history.push({
+      action: "Technician Assigned",
+      by: req.user.userId,
+      notes: `Assigned to technician ID: ${technicianId}`
+    });
+
+    await ticket.save();
+    res.json({ success: true, message: "Technician assigned successfully", ticket });
+  } catch (error) {
+    res.status(500).json({ message: 'Error assigning technician' });
+  }
+};
+
+// logic : feedback submission for completed tickets
 exports.submitFeedback = async (req, res) => {
   try{
     const { rating, comment } = req.body;
 
-    // validation ensure rating is 1-5
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ msg: 'Rating must be between 1 and 5' });
     }
 
-    // find ticket ensuring it belongs to user AND is completed
     const ticket = await Ticket.findOneAndUpdate(
       { 
         _id: req.params.id, 
@@ -325,15 +311,14 @@ exports.submitFeedback = async (req, res) => {
       { new: true }
     );
 
-    if (!ticket) return res.status(404).json({ msg: 'Ticket unavailable for feedback (must be Completed and owned by you)' });
+    if (!ticket) return res.status(404).json({ msg: 'Ticket unavailable for feedback' });
     res.json(ticket);
   } catch (err) {
-    console.error("Feedback Error:", err.message);
     res.status(500).send('Server Error');
   }
 };
 
-// KPI stats for admin dashboard
+// logic : KPI stats for admin dashboard
 exports.getFeedbackKPIs = async (req, res) => {
   try {
     const stats = await Ticket.aggregate([
@@ -348,7 +333,6 @@ exports.getFeedbackKPIs = async (req, res) => {
     ]);
     res.json(stats);
   } catch (err) {
-    console.error("KPI Error:", err.message);
     res.status(500).send('Server Error');
   }
 };

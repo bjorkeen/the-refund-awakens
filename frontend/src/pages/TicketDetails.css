@@ -266,3 +266,24 @@
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* //christos styling in return/refund */
+.return-alert-box {
+  background-color: #fffbeb; /* Light yellow background */
+  border: 1px solid #fcd34d;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.badge-preference {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #7c3aed; /* Purple badge for preference */
+  color: white;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 14px;
+  margin-top: 5px;
+  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
+}

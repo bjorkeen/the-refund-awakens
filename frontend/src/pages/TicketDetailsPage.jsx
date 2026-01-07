@@ -208,6 +208,36 @@ export default function TicketDetailsPage() {
 
               {/* SIDEBAR */}
               <div className="td-sidebar">
+                
+                {/* //christos [return & refund UI ] */}
+                {ticket.serviceType === 'Return' && (
+                  <div className="td-section return-alert-box">
+                    <div className="td-section-title" style={{ color: '#d97706' }}>
+                       Return Request Details
+                    </div>
+                    <div className="td-text">
+                      <strong>Customer Preference:</strong> <br/>
+                      <span className="badge-preference">
+                        {ticket.customerSelection || 'Not Specified'}
+                      </span>
+                      
+                      <div style={{ marginTop: '15px', borderTop: '1px dashed #fcd34d', paddingTop: '10px' }}>
+                         <strong>Validation Check:</strong> <br/>
+                         {(() => {
+                            const pDate = new Date(ticket.product?.purchaseDate);
+                            const created = new Date(ticket.createdAt);
+                            const diff = Math.ceil((created - pDate) / (1000 * 60 * 60 * 24));
+                            return (
+                              <span style={{ fontSize: '13px', color: '#666' }}>
+                                Purchased <b>{diff} days</b> before request.
+                              </span>
+                            );
+                         })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Delivery Info */}
                 <div className="td-section">
                     <div className="td-section-title">Logistics</div>

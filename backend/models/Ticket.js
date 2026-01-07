@@ -69,6 +69,21 @@ const ticketSchema = new mongoose.Schema({
     enum: ['Under Warranty', 'Out of Warranty', 'Manual Review', 'Eligible for Return', 'Return Period Expired'],
     default: 'Manual Review'
   },
+
+  //return and refund options logic 
+  resolutionOptions: [{ 
+    type: String, 
+    enum: ['Refund', 'Replacement', 'Repair'],
+    default: []
+  }],
+
+  // store the specific choice made by the customer
+  customerSelection: {
+    type: String,
+    enum: ['Refund', 'Replacement', 'None'],
+    default: 'None'
+  },
+
   
   assignedRepairCenter: {
     type: mongoose.Schema.Types.ObjectId,
