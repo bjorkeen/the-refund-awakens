@@ -269,7 +269,7 @@ export default function TicketDetailsPage() {
                 </div>
 
                 {/* Actions (Tech/Admin) */}
-                {(['Technician', 'Admin', 'Manager'].includes(user?.role)) && (
+                {(['Technician', 'Admin', 'Manager', 'Employee'].includes(user?.role)) && (
                     <div className="td-section">
                         <div className="td-section-title" style={{color:'#0369a1'}}>Action</div>
                         <select value={ticket.status} onChange={handleStatusChange} style={{padding:'8px', width:'100%'}}>
