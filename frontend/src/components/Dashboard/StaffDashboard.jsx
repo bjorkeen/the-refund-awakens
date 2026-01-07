@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllTickets, updateTicketStatus, assignTicket } from '../../services/ticketService';
+import { useNotification } from '@/context/NotificationContext';
 import styles from './StaffDashboard.module.css';
 
 
@@ -9,10 +10,15 @@ function getServiceType(t) {
 }
 
 const StaffDashboard = () => {
+  const { showNotification } = useNotification();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(""); 
   const navigate = useNavigate();
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 10;
 
   const technicians = [
     { id: '695b284f2c732806f5047901', name: 'Bob Smartphone', email: 'mobile@demo.com' },
@@ -41,10 +47,10 @@ const StaffDashboard = () => {
     if (!techId) return;
     try {
       await assignTicket(ticketId, techId);
-      alert("Technician assigned successfully!");
+      showNotification("Technician assigned successfully!", "success");
       fetchTickets(); 
     } catch (error) {
-      alert("Assignment failed.");
+      showNotification("Assignment failed.", "error");
     }
   };
 
@@ -52,8 +58,9 @@ const StaffDashboard = () => {
     try {
       await updateTicketStatus(ticketId, newStatus);
       setTickets(prev => prev.map(t => t._id === ticketId ? { ...t, status: newStatus } : t));
+      showNotification("Status updated successfully!", "success");
     } catch (error) {
-      alert("Status update failed.");
+      showNotification("Status update failed.", "error");
     }
   };
 
@@ -71,6 +78,17 @@ const StaffDashboard = () => {
     active: tickets.filter(t => ['Submitted', 'Pending Validation', 'In Progress'].includes(t.status)).length,
     completed: tickets.filter(t => ['Completed', 'Closed'].includes(t.status)).length
   }), [tickets]);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredTickets.length / ticketsPerPage);
+  const indexOfLastTicket = currentPage * ticketsPerPage;
+  const indexOfFirstTicket = indexOfLastTicket - ticketsPerPage;
+  const currentTickets = filteredTickets.slice(indexOfFirstTicket, indexOfLastTicket);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   if (loading) return <div className={styles.container}>Loading Workspace...</div>;
 
@@ -122,7 +140,7 @@ const StaffDashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredTickets.map((ticket) => (
+            {currentTickets.map((ticket) => (
               <tr key={ticket._id}>
                 <td style={{ fontWeight: 'bold' }}>
                    #{ticket.ticketId || ticket._id.substring(ticket._id.length - 8).toUpperCase()}
@@ -189,6 +207,40 @@ const StaffDashboard = () => {
             ))}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: '#f9fafb', borderTop: '1px solid #e5e7eb' }}>
+            <div style={{ fontSize: '14px', color: '#6b7280' }}>Showing {indexOfFirstTicket + 1} to {Math.min(indexOfLastTicket, filteredTickets.length)} of {filteredTickets.length}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button 
+                style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '14px', fontWeight: '600', opacity: currentPage === 1 ? 0.5 : 1 }} 
+                disabled={currentPage === 1} 
+                onClick={() => setCurrentPage(prev => prev - 1)}
+              >
+                Previous
+              </button>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button 
+                    key={i + 1} 
+                    style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #d1d5db', background: currentPage === i + 1 ? '#2563eb' : 'white', color: currentPage === i + 1 ? 'white' : '#374151', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} 
+                    onClick={() => setCurrentPage(i + 1)}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button 
+                style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontSize: '14px', fontWeight: '600', opacity: currentPage === totalPages ? 0.5 : 1 }} 
+                disabled={currentPage === totalPages} 
+                onClick={() => setCurrentPage(prev => prev + 1)}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

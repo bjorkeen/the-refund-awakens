@@ -11,6 +11,10 @@ const TechnicianDashboard = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 10;
+
   const fetchData = async () => {
     try {
       const data = await getAssignedTickets();
@@ -73,6 +77,12 @@ const TechnicianDashboard = () => {
     }
   };
 
+  // Pagination Logic
+  const totalPages = Math.ceil(tickets.length / ticketsPerPage);
+  const indexOfLastTicket = currentPage * ticketsPerPage;
+  const indexOfFirstTicket = indexOfLastTicket - ticketsPerPage;
+  const currentTickets = tickets.slice(indexOfFirstTicket, indexOfLastTicket);
+
   if (loading)
     return <div className="tech-container">Loading workspace...</div>;
 
@@ -125,7 +135,7 @@ const TechnicianDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {tickets.map((ticket) => (
+              {currentTickets.map((ticket) => (
                 <tr key={ticket._id}>
                   <td style={{ fontFamily: "monospace", fontWeight: "bold" }}>
                     {ticket.ticketId || ticket._id.substring(0, 8)}
@@ -186,6 +196,42 @@ const TechnicianDashboard = () => {
               ))}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: '#f9fafb', borderTop: '1px solid #e5e7eb' }}>
+              <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                Showing {indexOfFirstTicket + 1} to {Math.min(indexOfLastTicket, tickets.length)} of {tickets.length}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button 
+                  style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '14px', fontWeight: '600', opacity: currentPage === 1 ? 0.5 : 1 }} 
+                  disabled={currentPage === 1} 
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                >
+                  Previous
+                </button>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button 
+                      key={i + 1} 
+                      style={{ width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #d1d5db', background: currentPage === i + 1 ? '#2563eb' : 'white', color: currentPage === i + 1 ? 'white' : '#374151', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }} 
+                      onClick={() => setCurrentPage(i + 1)}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                <button 
+                  style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontSize: '14px', fontWeight: '600', opacity: currentPage === totalPages ? 0.5 : 1 }} 
+                  disabled={currentPage === totalPages} 
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
