@@ -69,7 +69,6 @@ export default function TicketDetailsPage() {
     }
   };
 
-  // Fetch Ticket
   const fetchTicket = async () => {
     try {
       setLoading(true);
@@ -86,11 +85,10 @@ export default function TicketDetailsPage() {
     fetchTicket();
   }, [id]);
 
-  // Status change Handler (Technician)
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     try {
-      // Optimistic Update
+      //optimistic update
       setTicket((prev) => ({ ...prev, status: newStatus }));
       await updateTicketStatus(id, newStatus);
     } catch (err) {
@@ -99,16 +97,20 @@ export default function TicketDetailsPage() {
     }
   };
 
+  //christos lightbox handlers
+  const openLightbox = (imgUrl) => {
+    setSelectedImage(imgUrl);
+    setLightboxOpen(true);
+  };
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+    setSelectedImage(null);
+  };
+
   if (loading) return <div className="td-container">Loading...</div>;
-  if (error)
-    return (
-      <div className="td-container" style={{ color: "red" }}>
-        {error}
-      </div>
-    );
+  if (error) return <div className="td-container" style={{ color: "red" }}>{error}</div>;
   if (!ticket) return null;
 
-  // Repair ή Return
   const requestType = ticket.serviceType || "Repair";
   const isDropoff = ticket.deliveryMethod === 'dropoff' || ticket.address === 'Store Drop-off' || ticket.city === '-';
   const STEPS = isDropoff ? STEPS_DROPOFF : STEPS_COURIER;
@@ -122,23 +124,17 @@ export default function TicketDetailsPage() {
         </button>
 
         <div className="td-card">
-          {/* Header */}
           <div className="td-header">
             <div className="td-title">
               <h1>{requestType} Request</h1>
               <div className="td-id">ID: {ticket.ticketId || ticket._id}</div>
             </div>
 
-            <div
-              className={`td-status-badge badge-${(ticket.status || "submitted")
-                .toLowerCase()
-                .replace(/ /g, "-")}`}
-            >
+            <div className={`td-status-badge badge-${(ticket.status || "submitted").toLowerCase().replace(/ /g, "-")}`}>
               {ticket.status}
             </div>
           </div>
 
-          {/* --- TIMELINE SECTION --- */}
           {currentStep !== -1 && (
             <div className="td-timeline">
                 <div className="td-progress-bar">
@@ -166,8 +162,10 @@ export default function TicketDetailsPage() {
               <div className="td-main">
                 <div className="td-section">
                   <div className="td-section-title">Description</div>
+                  
+                  {/* internal comments logic (tech only) */}
                   {user?.role !== "Customer" && (
-                    <div className="td-section">
+                    <div className="td-section" style={{marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '20px'}}>
                       <div className="td-section-title">Internal Comments</div>
 
                       <div className="td-comments-list">
@@ -175,24 +173,14 @@ export default function TicketDetailsPage() {
                           ticket.internalComments.map((c, idx) => (
                             <div key={idx} className="td-comment">
                               <div className="td-comment-meta">
-                                <strong>
-                                  {c?.by?.fullName ||
-                                    c?.by?.email?.split("@")[0] ||
-                                    "User"}
-                                </strong>
-                                <span>
-                                  {c?.createdAt
-                                    ? new Date(c.createdAt).toLocaleString()
-                                    : ""}
-                                </span>
+                                <strong>{c?.by?.fullName || c?.by?.email?.split("@")[0] || "User"}</strong>
+                                <span>{c?.createdAt ? new Date(c.createdAt).toLocaleString() : ""}</span>
                               </div>
                               <div className="td-comment-text">{c.text}</div>
                             </div>
                           ))
                         ) : (
-                          <div className="td-text">
-                            No internal comments yet.
-                          </div>
+                          <div className="td-text">No internal comments yet.</div>
                         )}
                       </div>
 
@@ -216,24 +204,60 @@ export default function TicketDetailsPage() {
                   )}
 
                   <div className="td-text">
-                    {ticket.issue?.description ||
-                      ticket.description ||
-                      "No description provided."}
+                    {ticket.issue?.description || ticket.description || "No description provided."}
                   </div>
                 </div>
+
+                {/* christos attachments gallery */}
+                {ticket.issue?.attachments && ticket.issue.attachments.length > 0 && (
+                  <div className="td-section">
+                    <div className="td-section-title">Attachments</div>
+                    <div className="td-attachments-grid">
+                      {ticket.issue.attachments.map((file, index) => {
+                         //ensure valid url for static folder
+                         const cleanUrl = `http://localhost:5050/${file}`;
+
+                         return (
+                            <div key={index} className="td-attachment-item" onClick={() => openLightbox(cleanUrl)}>
+                              <img src={cleanUrl} alt={`Attachment ${index + 1}`} />
+                            </div>
+                         );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 <div className="td-section">
                   <div className="td-section-title">Product Info</div>
                   <div className="td-text">
                     <strong>Model:</strong> {ticket.product?.model} <br />
-                    <strong>Serial:</strong> {ticket.product?.serialNumber}{" "}
-                    <br />
+                    <strong>Serial:</strong> {ticket.product?.serialNumber} <br />
                     <strong>Type:</strong> {ticket.product?.type}
                   </div>
                 </div>
               </div>
 
                 <div className="td-sidebar">
+                    {/* christos show assigned tech details */}
+                    <div className="td-section">
+                        <div className="td-section-title">Assigned Technician</div>
+                        <div className="td-text">
+                           {ticket.assignedRepairCenter ? (
+                             <>
+                               <strong>Name:</strong> {ticket.assignedRepairCenter.fullName || ticket.assignedRepairCenter.name} <br/>
+                               {ticket.assignedRepairCenter.email && (
+                                 <><strong>Email:</strong> {ticket.assignedRepairCenter.email} <br/></>
+                               )}
+                               {ticket.assignedRepairCenter.specialty && (
+                                 <><strong>Specialty:</strong> {ticket.assignedRepairCenter.specialty}</>
+                               )}
+                             </>
+                           ) : (
+                             <span style={{color: '#999'}}>Pending Assignment...</span>
+                           )}
+                        </div>
+                    </div>
+
                     <div className="td-section">
                         <div className="td-section-title">Request Details</div>
                         <div className="td-text">
@@ -242,8 +266,7 @@ export default function TicketDetailsPage() {
                         </div>
                     </div>
                     
-                    {/* Τεχνικά controls (αν ο χρήστης είναι Admin/Technician) */}
-                    {(user.role === 'Technician' || user.role === 'Admin') && (
+                    {(user.role === 'Technician' || user.role === 'Admin' || user.role === 'Manager') && (
                         <div className="td-section">
                             <div className="td-section-title" style={{color:'#0369a1'}}>Action</div>
                             <select value={ticket.status} onChange={handleStatusChange} style={{padding:'5px', width:'100%'}}>
@@ -265,6 +288,17 @@ export default function TicketDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* simple lightbox modal */}
+      {lightboxOpen && (
+        <div className="lightbox-overlay" onClick={closeLightbox}>
+          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <img src={selectedImage} alt="Full size" />
+            <button className="lightbox-close" onClick={closeLightbox}>✕</button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

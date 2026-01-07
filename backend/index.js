@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
+const path = require('path'); //christos: needed for static serving
 
 // Routes
 const authRoutes = require('./routes/auth');
@@ -16,7 +17,9 @@ const app = express();
 
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" } //christos allow frontend to load images
+}));
 
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:3000'],
@@ -26,6 +29,14 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser());
+
+//christos serve uploads folder safely (no directory listing, no mime sniffing)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  index: false, //restricts file list visibility
+  setHeaders: (res, path) => {
+    res.set('X-Content-Type-Options', 'nosniff'); //forces browser to see it as image, not as a script to run
+  }
+}));
 
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
