@@ -1,19 +1,22 @@
 const Ticket = require("../models/Ticket");
 const User = require("../models/User");
+const { sendStatusUpdateEmail } = require("../utils/emailService");
 
 // logic : warranty check helper (15 days vs 24 months)
 const checkWarranty = (purchaseDate, serviceType) => {
   const today = new Date();
   const pDate = new Date(purchaseDate);
 
-  if (serviceType === 'Return') {
+  if (serviceType === "Return") {
     const diffTime = Math.abs(today - pDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-    return diffDays <= 15 ? 'Eligible for Return' : 'Return Period Expired';
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 15 ? "Eligible for Return" : "Return Period Expired";
   } else {
     // logic : standard 24 month warranty for repairs
-    const diffMonths = (today.getFullYear() - pDate.getFullYear()) * 12 + (today.getMonth() - pDate.getMonth());
-    return diffMonths <= 24 ? 'Under Warranty' : 'Out of Warranty';
+    const diffMonths =
+      (today.getFullYear() - pDate.getFullYear()) * 12 +
+      (today.getMonth() - pDate.getMonth());
+    return diffMonths <= 24 ? "Under Warranty" : "Out of Warranty";
   }
 };
 
@@ -28,8 +31,8 @@ exports.createTicket = async (req, res) => {
       address,
       city,
       postalCode,
-      customerSelection, 
-      
+      customerSelection,
+
       serialNumber,
       model,
       purchaseDate,
@@ -45,55 +48,61 @@ exports.createTicket = async (req, res) => {
     let resolutionOptions = [];
     let initialStatus = "Submitted";
 
-    if (serviceType === 'Return') {
+    if (serviceType === "Return") {
       // logic : calculate days since purchase
       const pDate = new Date(purchaseDate);
       const diffDays = Math.ceil((new Date() - pDate) / (1000 * 60 * 60 * 24));
-      
+
       // logic : hard block if return period > 15 days
       if (diffDays > 15) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Return period expired (15 days). Please submit a Repair request instead." 
+        return res.status(400).json({
+          success: false,
+          message:
+            "Return period expired (15 days). Please submit a Repair request instead.",
         });
       }
 
       // logic : set resolution options for valid returns
-      resolutionOptions = ['Refund', 'Replacement'];
-      
+      resolutionOptions = ["Refund", "Replacement"];
+
       // logic : returns skip auto-assignment to wait for staff validation
       initialStatus = "Pending Validation";
-      assignedTech = null; 
-
+      assignedTech = null;
     } else {
       // logic : smart assignment logic for repairs
-      resolutionOptions = ['Repair'];
-      initialStatus = "Submitted"; 
+      resolutionOptions = ["Repair"];
+      initialStatus = "Submitted";
 
       // logic : find technicians with matching specialty
-      const eligibleTechs = await User.find({ role: "Technician", specialty: type });
+      const eligibleTechs = await User.find({
+        role: "Technician",
+        specialty: type,
+      });
 
       // logic : check workload less than 5 active tickets
       for (const tech of eligibleTechs) {
         const activeTickets = await Ticket.countDocuments({
           assignedRepairCenter: tech._id,
           // logic : exclude completed/closed tickets from workload count
-          status: { $nin: ['Completed', 'Closed', 'Cancelled', 'Rejected'] }
+          status: { $nin: ["Completed", "Closed", "Cancelled", "Rejected"] },
         });
-        
+
         if (activeTickets < 5) {
           assignedTech = tech;
-          break; 
+          break;
         }
       }
 
       // logic : fallback to general technician if specialists are full
       if (!assignedTech) {
-        const generalTechs = await User.find({ role: "Technician", specialty: "Other" });
+        const generalTechs = await User.find({
+          role: "Technician",
+          specialty: "Other",
+        });
         for (const tech of generalTechs) {
           const activeTickets = await Ticket.countDocuments({
             assignedRepairCenter: tech._id,
-            status: { $nin: ['Completed', 'Closed', 'Cancelled', 'Rejected'] }
+            status: { $nin: ["Completed", "Closed", "Cancelled", "Rejected"] },
           });
           if (activeTickets < 5) {
             assignedTech = tech;
@@ -105,43 +114,45 @@ exports.createTicket = async (req, res) => {
 
     const ticketId = `TKT-${Date.now()}`;
     // logic : extract file paths
-    const filePaths = req.body.attachments || []; 
+    const filePaths = req.body.attachments || [];
 
     const newTicket = new Ticket({
       customer: req.user.userId,
       ticketId,
-      
-      serviceType: serviceType || 'Repair',
-      deliveryMethod: deliveryMethod || 'courier',
+
+      serviceType: serviceType || "Repair",
+      deliveryMethod: deliveryMethod || "courier",
       contactInfo: {
-        fullName: contactName || 'N/A',
-        email: contactEmail || 'N/A',
-        phone: contactPhone || 'N/A',
-        address: address || '',
-        city: city || '',
-        postalCode: postalCode || ''
+        fullName: contactName || "N/A",
+        email: contactEmail || "N/A",
+        phone: contactPhone || "N/A",
+        address: address || "",
+        city: city || "",
+        postalCode: postalCode || "",
       },
 
       product: { serialNumber, model, purchaseDate, type },
-      
+
       issue: {
         category,
         description,
-        attachments: filePaths, 
+        attachments: filePaths,
       },
 
       warrantyStatus,
       resolutionOptions,
-      customerSelection: customerSelection || 'None',
-      
+      customerSelection: customerSelection || "None",
+
       status: initialStatus,
       assignedRepairCenter: assignedTech ? assignedTech._id : null,
 
-      history: [{
+      history: [
+        {
           action: "Ticket Created",
           by: req.user.userId,
           notes: `Initial submission as ${serviceType}`,
-      }],
+        },
+      ],
     });
 
     await newTicket.save();
@@ -152,9 +163,11 @@ exports.createTicket = async (req, res) => {
       _id: newTicket._id,
       ticketId: newTicket.ticketId,
       warrantyStatus,
-      resolutionOptions, 
-      assignedRepairCenter: assignedTech ? assignedTech.fullName : "Pending Assignment",
-      uploadedFiles : filePaths 
+      resolutionOptions,
+      assignedRepairCenter: assignedTech
+        ? assignedTech.fullName
+        : "Pending Assignment",
+      uploadedFiles: filePaths,
     });
   } catch (error) {
     console.error("Create Ticket Error:", error);
@@ -176,36 +189,40 @@ exports.getMyTickets = async (req, res) => {
 exports.getTicketById = async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id)
-      .populate('customer', 'fullName email')
-      .populate('assignedRepairCenter', 'fullName email specialty')
-      .populate('internalComments.by', 'fullName email role');
+      .populate("customer", "fullName email")
+      .populate("assignedRepairCenter", "fullName email specialty")
+      .populate("internalComments.by", "fullName email role");
 
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
 
-    if (req.user.role === 'Customer' && ticket.customer._id.toString() !== req.user.userId) {
-      return res.status(401).json({ message: 'Not authorized' });
+    if (
+      req.user.role === "Customer" &&
+      ticket.customer._id.toString() !== req.user.userId
+    ) {
+      return res.status(401).json({ message: "Not authorized" });
     }
-    
-    if (req.user.role === 'Customer') {
+
+    if (req.user.role === "Customer") {
       const t = ticket.toObject();
       delete t.internalComments;
       return res.json(t);
     }
-    
+
     res.json(ticket);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 exports.getAllTickets = async (req, res) => {
   try {
     // logic: ensure customers cannot access this route (redundant if middleware exists but safe)
-    if (req.user.role === 'Customer') return res.status(403).json({ message: "Access denied" });
-    
+    if (req.user.role === "Customer")
+      return res.status(403).json({ message: "Access denied" });
+
     const tickets = await Ticket.find()
-      .populate('customer', 'fullName email')
-      .populate('assignedRepairCenter', 'fullName email specialty')
+      .populate("customer", "fullName email")
+      .populate("assignedRepairCenter", "fullName email specialty")
       .sort({ createdAt: -1 });
     res.json(tickets);
   } catch (error) {
@@ -218,20 +235,38 @@ exports.getAllTicketsAdmin = exports.getAllTickets;
 exports.updateTicketStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const ticket = await Ticket.findById(req.params.id);
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+    const ticket = await Ticket.findById(req.params.id).populate("customer");
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+
+    const oldStatus = ticket.status;
 
     ticket.history.push({
-        action: "Status Updated",
-        by: req.user.userId,
-        notes: `Status changed from ${ticket.status} to ${status}`
+      action: "Status Updated",
+      by: req.user.userId,
+      notes: `Status changed from ${ticket.status} to ${status}`,
     });
 
     ticket.status = status;
     await ticket.save();
+    if (status !== oldStatus && ticket.customer && ticket.customer.email) {
+      const customerName =
+        ticket.customer.fullName || ticket.contactInfo?.fullName || "Customer";
+      const model = ticket.product?.model || ticket.model || "Device";
+      const ticketDisplayId = ticket.ticketId || ticket._id;
+
+      sendStatusUpdateEmail(
+        ticket.customer.email,
+        customerName,
+        ticketDisplayId,
+        model,
+        status
+      ).catch((err) => console.error("Email service failed silently:", err));
+    }
+
     res.json(ticket);
   } catch (error) {
-    res.status(500).json({ message: 'Server error updating status' });
+    console.error("Error updating ticket status:", error);
+    res.status(500).json({ message: "Server error updating status" });
   }
 };
 
@@ -243,9 +278,11 @@ exports.addInternalComment = async (req, res) => {
 
     ticket.internalComments.push({ by: req.user.userId, text });
     await ticket.save();
-    
-    const updated = await Ticket.findById(req.params.id)
-      .populate("internalComments.by", "fullName role");
+
+    const updated = await Ticket.findById(req.params.id).populate(
+      "internalComments.by",
+      "fullName role"
+    );
     res.json(updated);
   } catch (error) {
     res.status(500).json({ message: "Error adding comment" });
@@ -255,11 +292,11 @@ exports.addInternalComment = async (req, res) => {
 exports.getAssignedTickets = async (req, res) => {
   try {
     const tickets = await Ticket.find({ assignedRepairCenter: req.user.userId })
-      .populate('customer', 'fullName email') 
+      .populate("customer", "fullName email")
       .sort({ createdAt: -1 });
     res.json(tickets);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching assigned tickets' });
+    res.status(500).json({ message: "Error fetching assigned tickets" });
   }
 };
 
@@ -268,53 +305,58 @@ exports.assignTechnician = async (req, res) => {
   try {
     const { technicianId } = req.body;
     const ticket = await Ticket.findById(req.params.id);
-    
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
 
     ticket.assignedRepairCenter = technicianId;
-    
+
     ticket.history.push({
       action: "Technician Assigned",
       by: req.user.userId,
-      notes: `Assigned to technician ID: ${technicianId}`
+      notes: `Assigned to technician ID: ${technicianId}`,
     });
 
     await ticket.save();
-    res.json({ success: true, message: "Technician assigned successfully", ticket });
+    res.json({
+      success: true,
+      message: "Technician assigned successfully",
+      ticket,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error assigning technician' });
+    res.status(500).json({ message: "Error assigning technician" });
   }
 };
 
 // logic : feedback submission for completed tickets
 exports.submitFeedback = async (req, res) => {
-  try{
+  try {
     const { rating, comment } = req.body;
 
     if (!rating || rating < 1 || rating > 5) {
-      return res.status(400).json({ msg: 'Rating must be between 1 and 5' });
+      return res.status(400).json({ msg: "Rating must be between 1 and 5" });
     }
 
     const ticket = await Ticket.findOneAndUpdate(
-      { 
-        _id: req.params.id, 
-        customer: req.user.userId, 
-        status: 'Completed' 
+      {
+        _id: req.params.id,
+        customer: req.user.userId,
+        status: "Completed",
       },
-      { 
-        feedback: { 
-          rating, 
-          comment, 
-          createdAt: new Date() 
-        } 
+      {
+        feedback: {
+          rating,
+          comment,
+          createdAt: new Date(),
+        },
       },
       { new: true }
     );
 
-    if (!ticket) return res.status(404).json({ msg: 'Ticket unavailable for feedback' });
+    if (!ticket)
+      return res.status(404).json({ msg: "Ticket unavailable for feedback" });
     res.json(ticket);
   } catch (err) {
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
 
@@ -326,13 +368,13 @@ exports.getFeedbackKPIs = async (req, res) => {
       {
         $group: {
           _id: "$feedback.rating",
-          count: { $sum: 1 }
-        }
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { _id: 1 } }
+      { $sort: { _id: 1 } },
     ]);
     res.json(stats);
   } catch (err) {
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
