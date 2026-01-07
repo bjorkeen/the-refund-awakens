@@ -161,6 +161,7 @@ const TechnicianDashboard = () => {
                         Waiting for Parts
                       </option>
                       <option value="Shipped Back">Shipped Back</option>
+                      <option value="Ready for Pickup">Ready for Pickup</option>
                       <option value="Completed">Completed</option>
                       <option value="Closed">Closed</option>
                       <option value="Cancelled">Cancelled</option>

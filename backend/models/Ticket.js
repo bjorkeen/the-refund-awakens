@@ -72,7 +72,7 @@ const ticketSchema = new mongoose.Schema({
     type: String,
     enum: [
       'Submitted', 'Shipping', 'Pending Validation', 'In Progress',
-      'Waiting for Parts', 'Shipped Back', 'Completed', 'Closed', 'Cancelled'
+      'Waiting for Parts', 'Shipped Back', 'Ready for Pickup', 'Completed', 'Closed', 'Cancelled'
     ],
     default: 'Submitted'
   },

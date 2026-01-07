@@ -31,8 +31,13 @@ exports.createTicket = async (req, res) => {
     const {
       //filippa new fields destructuring
       serviceType,
+      deliveryMethod,
       contactName,
       contactEmail,
+      contactPhone,
+      address,
+      city,
+      postalCode,
       
       serialNumber,
       model,
@@ -61,6 +66,13 @@ exports.createTicket = async (req, res) => {
       
       //filippa service and contact info assignment
       serviceType: serviceType || 'Repair',
+      deliveryMethod: deliveryMethod || 'courier',
+      contactName: contactName || 'N/A',
+      contactEmail: contactEmail || 'N/A',
+      phone: contactPhone || 'N/A',
+      address: address || '',
+      city: city || '',
+      postalCode: postalCode || '',
       contactInfo: {
         fullName: contactName || 'N/A',
         email: contactEmail || 'N/A'

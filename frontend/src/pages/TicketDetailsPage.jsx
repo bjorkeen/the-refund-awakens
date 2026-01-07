@@ -8,7 +8,8 @@ import {
 import { useAccess } from "@/context/AccessContext";
 import "./TicketDetails.css";
 
-const STEPS = ['Submitted', 'Shipping', 'In Progress', 'Shipped Back', 'Completed'];
+const STEPS_COURIER = ['Submitted', 'Shipping', 'In Progress', 'Shipped Back', 'Completed'];
+const STEPS_DROPOFF = ['Submitted', 'In Progress', 'Ready for Pickup', 'Completed'];
 
 export default function TicketDetailsPage() {
   const { id } = useParams();
@@ -22,19 +23,34 @@ export default function TicketDetailsPage() {
   const [commentText, setCommentText] = useState("");
   const [savingComment, setSavingComment] = useState(false);
 
-  const getCurrentStepIndex = (status) => {
+  const getCurrentStepIndex = (status, isDropoff) => {
     if (!status) return 0;
-    switch (status) {
-      case 'Submitted': return 0;
-      case 'Shipping': return 1;
-      case 'Pending Validation': 
-      case 'Waiting for Parts': 
-      case 'In Progress': return 2;
-      case 'Shipped Back': return 3;
-      case 'Completed': return 4;
-      case 'Cancelled':
-      case 'Closed': return -1;
-      default: return 0;
+    
+    if (isDropoff) {
+      switch (status) {
+        case 'Submitted': return 0;
+        case 'Pending Validation': 
+        case 'Waiting for Parts': 
+        case 'In Progress': return 1;
+        case 'Ready for Pickup': return 2;
+        case 'Completed': return 3;
+        case 'Cancelled':
+        case 'Closed': return -1;
+        default: return 0;
+      }
+    } else {
+      switch (status) {
+        case 'Submitted': return 0;
+        case 'Shipping': return 1;
+        case 'Pending Validation': 
+        case 'Waiting for Parts': 
+        case 'In Progress': return 2;
+        case 'Shipped Back': return 3;
+        case 'Completed': return 4;
+        case 'Cancelled':
+        case 'Closed': return -1;
+        default: return 0;
+      }
     }
   };
 
@@ -94,7 +110,9 @@ export default function TicketDetailsPage() {
 
   // Repair ή Return
   const requestType = ticket.serviceType || "Repair";
-  const currentStep = getCurrentStepIndex(ticket.status);
+  const isDropoff = ticket.deliveryMethod === 'dropoff' || ticket.address === 'Store Drop-off' || ticket.city === '-';
+  const STEPS = isDropoff ? STEPS_DROPOFF : STEPS_COURIER;
+  const currentStep = getCurrentStepIndex(ticket.status, isDropoff);
 
   return (
     <div className="td-page">
@@ -230,11 +248,12 @@ export default function TicketDetailsPage() {
                             <div className="td-section-title" style={{color:'#0369a1'}}>Action</div>
                             <select value={ticket.status} onChange={handleStatusChange} style={{padding:'5px', width:'100%'}}>
                                 <option value="Submitted">Submitted</option>
-                                <option value="Shipping">Shipping</option>
+                                {!isDropoff && <option value="Shipping">Shipping</option>}
                                 <option value="Pending Validation">Pending Validation</option>
                                 <option value="In Progress">In Progress</option>
                                 <option value="Waiting for Parts">Waiting for Parts</option>
-                                <option value="Shipped Back">Shipped Back</option>
+                                {isDropoff && <option value="Ready for Pickup">Ready for Pickup</option>}
+                                {!isDropoff && <option value="Shipped Back">Shipped Back</option>}
                                 <option value="Completed">Completed</option>
                                 <option value="Closed">Closed</option>
                                 <option value="Cancelled">Cancelled</option>

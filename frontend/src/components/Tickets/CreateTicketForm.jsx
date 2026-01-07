@@ -262,11 +262,18 @@ const handleAddScript = (text) => {
       // 3. Create Ticket & Get Response
       const response = await createTicket(payload);
       
-      // Αποθήκευση του ID για το shipping label
+      // For dropoff, skip modal and go directly to dashboard
+      if (deliveryMethod === 'dropoff') {
+        showNotification(`${mode} request created successfully!`, "success");
+        navigate("/dashboard");
+        return;
+      }
+      
+      // Αποθήκευση του ID για το shipping label (only for courier)
       setTicketDbId(response._id || "");
       setCreatedTicketId(response.ticketId || "TKT-NEW");
       
-      // Εμφάνιση του επιβεβαιωτικού Modal
+      // Εμφάνιση του επιβεβαιωτικού Modal (only for courier)
       setShowSuccessModal(true);
 
     } catch (err) {
@@ -565,10 +572,10 @@ const handleAddScript = (text) => {
         <div className="modal-box success-modal">
           <div className="modal-icon">📦</div>
           <h2>Ticket Form #{createdTicketId}</h2>
-          <p>Your request has been successfully created! Please print the label to proceed.</p>
+          <p>Your request has been successfully created! Please print the shipping label for courier pickup.</p>
           
           <div className="modal-info-box">
-            <strong>Attention:</strong> Once printed, the status will change to <b>Shipping</b> and cancellation will be locked.
+            <strong>Attention:</strong> Once printed, the status will change to <b>Shipping</b> and the courier will pick up your device.
           </div>
 
           <div className="modal-footer-btns">

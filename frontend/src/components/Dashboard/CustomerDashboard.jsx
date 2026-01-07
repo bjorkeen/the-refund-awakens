@@ -249,12 +249,22 @@ export default function CustomerDashboard() {
                 {normalizeStatus(selectedTicket.status) !== 'Cancelled' && normalizeStatus(selectedTicket.status) !== 'Closed' && (
                   <div className="td-timeline">
                      {(() => {
-                       const steps = ['Submitted', 'Shipping', 'In Progress', 'Shipped Back', 'Completed'];
+                       // Determine if this is a dropoff ticket
+                       const isDropoff = selectedTicket.deliveryMethod === 'dropoff' || 
+                                        selectedTicket.address === 'Store Drop-off' || 
+                                        selectedTicket.city === '-';
+                       
+                       const steps = isDropoff 
+                         ? ['Submitted', 'In Progress', 'Ready for Pickup', 'Completed']
+                         : ['Submitted', 'Shipping', 'In Progress', 'Shipped Back', 'Completed'];
+                       
                        let currentStatus = normalizeStatus(selectedTicket.status);
+                       
                        // Map substates to main timeline steps
                        if (currentStatus === 'Pending Validation' || currentStatus === 'Waiting for Parts') {
                          currentStatus = 'In Progress';
                        }
+                       
                        const currentIndex = steps.findIndex(s => s === currentStatus);
                        const progressWidth = currentIndex < 0 ? 0 : ((currentIndex + 1) / steps.length) * 100;
                        return (
@@ -308,7 +318,7 @@ export default function CustomerDashboard() {
                     <div className="td-section">
                         <div className="td-section-title">Shipping Details</div>
                         <div className="td-text">
-                          {(selectedTicket.deliveryMethod === 'dropoff' || selectedTicket.address === 'Store Drop-off') ? (
+                          {(selectedTicket.deliveryMethod === 'dropoff' || selectedTicket.address === 'Store Drop-off' || selectedTicket.city === '-') ? (
                              <div className="td-logistics-dropoff">
                                 <span>Customer will bring to store (Drop-off)</span>
                              </div>

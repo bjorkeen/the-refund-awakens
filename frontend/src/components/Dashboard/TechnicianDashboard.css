@@ -134,6 +134,15 @@
   font-weight: 700;
 }
 
+.badge-ready-for-pickup {
+  background: #e9d5ff;
+  color: #6b21a8;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 .badge-completed {
   background: #dcfce7;
   color: #15803d; /* Πράσινο */
