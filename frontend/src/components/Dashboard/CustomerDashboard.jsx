@@ -4,6 +4,7 @@ import { getMyTickets, getTicket, submitFeedback } from "@/services/ticketServic
 import { useAccess } from "@/context/AccessContext";
 import { useNotification } from "@/context/NotificationContext";
 import "./CustomerDashboard.css";
+import "@/pages/TicketDetails.css";
 import WelcomeMessage from "./WelcomeMessage";
 
 // HELPER FUNCTIONS 
@@ -318,22 +319,30 @@ export default function CustomerDashboard() {
                     <div className="td-section">
                         <div className="td-section-title">Shipping Details</div>
                         <div className="td-text">
-                          {(selectedTicket.deliveryMethod === 'dropoff' || selectedTicket.address === 'Store Drop-off' || selectedTicket.city === '-') ? (
-                             <div className="td-logistics-dropoff">
-                                <span>Customer will bring to store (Drop-off)</span>
-                             </div>
-                          ) : (
-                             <div>
-                                <div className="td-logistics-courier">
-                                    <span>Courier Pickup</span>
-                                </div>
-                                <div className="td-logistics-details">
-                                    <strong>Address:</strong> {selectedTicket.address || 'N/A'} <br/>
-                                    <strong>City:</strong> {selectedTicket.city || 'N/A'} <br/>
-                                    <strong>Postal Code:</strong> {selectedTicket.postalCode || selectedTicket.zipCode || 'N/A'}
-                                </div>
-                             </div>
-                          )}
+                          {(() => {
+                            const address = selectedTicket.contactInfo?.address || selectedTicket.address || '-';
+                            const city = selectedTicket.contactInfo?.city || selectedTicket.city || '-';
+                            const postalCode = selectedTicket.contactInfo?.postalCode || selectedTicket.postalCode || selectedTicket.zipCode || '-';
+                            const deliveryMethod = selectedTicket.deliveryMethod || 'courier';
+                            const isDropoff = deliveryMethod === 'dropoff' || address === 'Store Drop-off' || city === '-';
+                            
+                            return isDropoff ? (
+                               <div className="td-logistics-dropoff">
+                                  <span>Customer will bring to store (Drop-off)</span>
+                               </div>
+                            ) : (
+                               <div>
+                                  <div className="td-logistics-courier">
+                                      <span>Courier Pickup</span>
+                                  </div>
+                                  <div className="td-logistics-details">
+                                      <strong>Address:</strong> {address} <br/>
+                                      <strong>City:</strong> {city} <br/>
+                                      <strong>Postal Code:</strong> {postalCode}
+                                  </div>
+                               </div>
+                            );
+                          })()}
                         </div>
                     </div>
                   </div>
@@ -361,37 +370,53 @@ export default function CustomerDashboard() {
                     </div>
 
                     {/* ATTACHMENTS */}
-                    <div className="td-attachments">
-                        <div className="td-section-title" style={{marginBottom:'10px'}}>Attachments</div>
+                    <div className="td-section">
+                        <div className="td-section-title">Attachments</div>
                         
                         {/* Invoice Check */}
-                        {selectedTicket.invoiceFileName ? (
-                          <div className="td-attachment-group">
-                             <div className="td-attachment-label">Invoice</div>
+                        {selectedTicket.invoiceFileName && (
+                          <div style={{marginBottom: '15px'}}>
+                             <div style={{fontSize: '0.85rem', fontWeight: '600', marginBottom: '8px'}}>Invoice</div>
                              <div className="td-file-row">
                                 <span className="td-file-icon">📄</span>
                                 <span>{selectedTicket.invoiceFileName}</span>
                              </div>
                           </div>
-                        ) : null}
+                        )}
 
-                        {/* Photos Check */}
-                        {(selectedTicket.photos && selectedTicket.photos.length > 0) ? (
-                          <div className="td-attachment-group">
-                             <div className="td-attachment-label">Photos ({selectedTicket.photos.length})</div>
-                             <ul className="td-file-list">
-                                {selectedTicket.photos.map((f, i) => (
-                                  <li key={i} className="td-file-item">
-                                    <span className="td-file-icon">📷</span>
-                                    <span>{typeof f === 'string' ? f : f.name || 'Image'}</span>
-                                  </li>
-                                ))}
-                             </ul>
+                        {/* Issue Attachments Check (Images) */}
+                        {(selectedTicket.issue?.attachments && selectedTicket.issue.attachments.length > 0) ? (
+                          <div>
+                             <div style={{fontSize: '0.85rem', fontWeight: '600', marginBottom: '8px'}}>Photos ({selectedTicket.issue.attachments.length})</div>
+                             <div className="td-attachments-grid">
+                                {selectedTicket.issue.attachments.map((file, index) => {
+                                  const cleanUrl = `http://localhost:5050/${file}`;
+                                  return (
+                                    <div key={index} className="td-attachment-item">
+                                      <img src={cleanUrl} alt="Attachment" onError={(e) => e.target.style.display='none'}/>
+                                    </div>
+                                  );
+                                })}
+                             </div>
                           </div>
-                        ) : null}
-                        
-                        {!selectedTicket.invoiceFileName && (!selectedTicket.photos || selectedTicket.photos.length === 0) && (
+                        ) : (selectedTicket.photos && selectedTicket.photos.length > 0) ? (
+                          <div>
+                             <div style={{fontSize: '0.85rem', fontWeight: '600', marginBottom: '8px'}}>Photos ({selectedTicket.photos.length})</div>
+                             <div className="td-attachments-grid">
+                                {selectedTicket.photos.map((file, index) => {
+                                  const imgUrl = typeof file === 'string' ? `http://localhost:5050/${file}` : URL.createObjectURL(file);
+                                  return (
+                                    <div key={index} className="td-attachment-item">
+                                      <img src={imgUrl} alt="Photo" onError={(e) => e.target.style.display='none'}/>
+                                    </div>
+                                  );
+                                })}
+                             </div>
+                          </div>
+                        ) : (
+                          !selectedTicket.invoiceFileName && (
                             <div className="td-text" style={{color:'#9ca3af', fontStyle:'italic'}}>No attachments found.</div>
+                          )
                         )}
                     </div>
 
