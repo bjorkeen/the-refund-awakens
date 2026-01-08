@@ -57,7 +57,7 @@ export default function TicketDetailsPage() {
   const [savingComment, setSavingComment] = useState(false);
   const [commentType, setCommentType] = useState("Note");
 
-  // Lightbox state (RESTORATION)
+  // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -121,7 +121,7 @@ export default function TicketDetailsPage() {
     }
   };
 
-  // Lightbox Handlers (RESTORATION)
+  // Lightbox Handlers
   const openLightbox = (url) => {
     setSelectedImage(url);
     setLightboxOpen(true);
@@ -145,7 +145,7 @@ export default function TicketDetailsPage() {
   const allowedNextStatuses = STATUS_TRANSITIONS[currentStatus] || [];
   const requestType = ticket.serviceType || "Repair";
 
-  // Logistics logic (RESTORATION)
+  // Logistics logic
   const isDropoff = ticket.deliveryMethod === "Drop-off";
   const address = ticket.contactInfo?.address || "";
   const city = ticket.contactInfo?.city || "";
@@ -187,7 +187,7 @@ export default function TicketDetailsPage() {
                   </div>
                 </div>
 
-                {/* 2. Attachments Section (RESTORED) */}
+                {/* 2. Attachments Section */}
                 {ticket.issue?.attachments && ticket.issue.attachments.length > 0 && (
                   <div className="td-section">
                     <div className="td-section-title">Attachments</div>
@@ -298,7 +298,7 @@ export default function TicketDetailsPage() {
                   </div>
                 </div>
 
-                {/* 5. Logistics Info (RESTORED) */}
+                {/* 5. Logistics Info */}
                 <div className="td-section">
                   <div className="td-section-title">Logistics</div>
                   <div className="td-text">
@@ -328,7 +328,7 @@ export default function TicketDetailsPage() {
                   </div>
                 </div>
 
-                {/* Assigned Technician (RESTORED) */}
+                {/* Assigned Technician */}
                 <div className="td-section">
                   <div className="td-section-title">Assigned Technician</div>
                   <div className="td-text">
@@ -348,7 +348,7 @@ export default function TicketDetailsPage() {
                   </div>
                 </div>
 
-                {/* Return Logic (RESTORED - Specific for Returns) */}
+                {/* Return Logic - Specific for Returns */}
                 {ticket.serviceType === "Return" && (
                   <div className="td-section return-alert-box">
                     <div
@@ -393,7 +393,7 @@ export default function TicketDetailsPage() {
                 )}
 
                 {/* Controls (Action) - Updated Logic Kept */}
-                {(user.role === "Technician" || user.role === "Admin") && (
+                {(user.role === "Technician" || user.role === "Admin" || user.role === "Employee") && (
                   <div className="td-section">
                     <div
                       className="td-section-title"
