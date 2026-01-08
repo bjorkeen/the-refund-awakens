@@ -3,7 +3,7 @@ import { getAllTicketsAdmin } from "@/services/ticketService";
 import { getAllUsers, deleteUser, createUser, updateUser } from "@/services/authService"; 
 import styles from "./AdminDashboard.module.css";
 import { useNotification } from "@/context/NotificationContext";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { getFeedbackKPIs } from "@/services/ticketService";
 
 const AdminDashboard = () => {
@@ -137,6 +137,31 @@ const AdminDashboard = () => {
       ? (dataArray.reduce((a, b) => a + (b._id * b.count), 0) / totalReviews).toFixed(1) 
       : 0;
   }, [kpiData, totalReviews]);
+
+  // --- TICKET STATUS DISTRIBUTION FOR PIE CHART ---
+  const statusData = useMemo(() => {
+  const counts = tickets.reduce((acc, ticket) => {
+    const status = ticket.status || "Unknown";
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+
+  return Object.keys(counts).map(status => ({
+    name: status,
+    count: counts[status]
+  }));
+}, [tickets]);
+
+// --- REPAIR VS RETURN DATA FOR PIE CHART ---
+const repairReturnData = useMemo(() => {
+  const repairs = tickets.filter(t => t.serviceType === "Repair").length;
+  const returns = tickets.filter(t => t.serviceType === "Return").length;
+  
+  return [
+    { name: "Repair", value: repairs, color: "#10b981" },
+    { name: "Return", value: returns, color: "#f59e0b" }
+  ];
+}, [tickets]);
 
   // --- STATISTICS (USERS)  ---
   const userStats = useMemo(() => {
@@ -354,18 +379,42 @@ const AdminDashboard = () => {
                   </ResponsiveContainer>
                 </div>
               </div>
-
+              {/* TICKET STATUS CHART */}
               <div className={styles.chartCard}>
-                <h3>Satisfaction Mix</h3>
+                <h3>Tickets by Status</h3>
+                <div className={styles.chartWrapper}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={statusData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              {/* REPAIR VS RETURN PIE CHART */}
+              <div className={styles.chartCard}>
+                <h3>Service Type Distribution</h3>
                 <div className={styles.chartWrapper}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={chartData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="count">
-                        {chartData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                      <Pie
+                        data={repairReturnData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {repairReturnData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
                       <Tooltip />
+                      <Legend />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>

@@ -10,6 +10,21 @@ import "./TicketDetails.css";
 
 const STEPS = ["Submitted", "In Progress", "Completed", "Closed"];
 
+function normalizeStatus(raw) {
+  if (!raw) return "Unknown";
+  const s = String(raw).toLowerCase();
+  if (s.includes("new") || s.includes("submitted")) return "Submitted";
+  if (s.includes("progress")) return "In Progress";
+  if (s.includes("complete") || s.includes("resolved")) return "Completed";
+  if (s.includes("cancel") || s.includes("reject")) return "Cancelled";
+  if (s.includes("validation")) return "Pending Validation";
+  if (s.includes("parts")) return "Waiting for Parts";
+  if (s.includes("shipping") && !s.includes("shipped back")) return "Shipping";
+  if (s.includes("shipped back")) return "Shipped Back";
+  if (s.includes("ready for pickup")) return "Ready for Pickup";
+  return String(raw).charAt(0).toUpperCase() + String(raw).slice(1);
+}
+
 const ALL_STATUSES = [
   "Submitted",
   "Pending Validation",
@@ -173,6 +188,53 @@ export default function TicketDetailsPage() {
               {ticket.status}
             </div>
           </div>
+
+          {/* Timeline */}
+          {normalizeStatus(ticket.status) !== 'Cancelled' && normalizeStatus(ticket.status) !== 'Closed' && (
+            <div className="td-timeline-wrapper">
+              <div className="td-timeline-container">
+                {(() => {
+                  const isDropoff = ticket.deliveryMethod === 'dropoff' || 
+                                   ticket.address === 'Store Drop-off' || 
+                                   ticket.city === '-';
+                  
+                  const steps = isDropoff 
+                    ? ['Submitted', 'In Progress', 'Ready for Pickup', 'Completed']
+                    : ['Submitted', 'Shipping', 'In Progress', 'Shipped Back', 'Completed'];
+                  
+                  let currentStatus = normalizeStatus(ticket.status);
+                  
+                  if (currentStatus === 'Pending Validation' || currentStatus === 'Waiting for Parts') {
+                    currentStatus = 'In Progress';
+                  }
+                  
+                  const currentIndex = steps.findIndex(s => s === currentStatus);
+                  const progressWidth = currentIndex < 0 ? 0 : ((currentIndex + 1) / steps.length) * 100;
+                  
+                  return (
+                    <>
+                      <div className="td-timeline-progress-track">
+                        <div className="td-timeline-progress-fill" style={{ width: `${progressWidth}%` }}></div>
+                      </div>
+                      
+                      <div className="td-timeline-steps">
+                        {steps.map((step, idx) => (
+                          <div key={step} className="td-timeline-step">
+                            <div className={`td-timeline-step-circle ${step === currentStatus || idx <= currentIndex ? 'active' : ''}`}>
+                              {idx + 1}
+                            </div>
+                            <div className={`td-timeline-step-label ${step === currentStatus ? 'active' : ''}`}>
+                              {step}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
 
           <div className="td-content">
             <div className="td-grid">
