@@ -3,7 +3,7 @@ import { getAllTicketsAdmin } from "@/services/ticketService";
 import { getAllUsers, deleteUser, createUser, updateUser } from "@/services/authService"; 
 import styles from "./AdminDashboard.module.css";
 import { useNotification } from "@/context/NotificationContext";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { getFeedbackKPIs } from "@/services/ticketService";
 
 const AdminDashboard = () => {
@@ -414,6 +414,7 @@ const repairReturnData = useMemo(() => {
                         ))}
                       </Pie>
                       <Tooltip />
+                      <Legend />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
