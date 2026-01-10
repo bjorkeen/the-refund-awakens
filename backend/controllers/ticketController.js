@@ -132,7 +132,9 @@ exports.createTicket = async (req, res) => {
 
     const ticketId = `TKT-${Date.now()}`;
     // logic : extract file paths
-    const filePaths = req.body.attachments || [];
+
+    // fix : get files from req.files provided by multer, not req.body
+    const filePaths = req.files ? req.files.map(file => file.path) : [];
 
     const newTicket = new Ticket({
       customer: req.user.userId,
@@ -255,6 +257,11 @@ exports.updateTicketStatus = async (req, res) => {
     const { status } = req.body;
     const ticket = await Ticket.findById(req.params.id).populate("customer");
     if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+
+    // security patch prevent technician from updating unassigned tickets 
+    if (req.user.role === "Technician" && ticket.assignedRepairCenter?.toString() !== req.user.userId) {
+      return res.status(403).json({ message: "You are not assigned to this ticket" });
+    }
 
     const newStatus = status;
     const currentStatus = ticket.status || "Submitted";

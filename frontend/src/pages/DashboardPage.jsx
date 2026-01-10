@@ -21,8 +21,9 @@ const DashboardPage = () => {
     case 'Employee':
       return <StaffDashboard />;
     case 'Customer':
-    default:
       return <CustomerDashboard />;
+    default:
+      return <Navigate to="/" replace />; //redirecting invalid/uknown roles to login
   }
 };
 

@@ -11,7 +11,8 @@ const { upload, resizeImage } = require('../middleware/uploadMiddleware');
 // --- ROUTES ---
 
 // POST /api/tickets - Create new ticket
-router.post('/', protect, upload.array('photos', 5), resizeImage, ticketController.createTicket);
+//addded auth security patch - Limit ticket creations to verified users
+router.post('/', protect, authorize('Customer', 'Employee', 'Admin', 'Manager'), upload.array('photos', 5), resizeImage, ticketController.createTicket);
 
 // GET /api/tickets - Get user's tickets
 router.get('/', protect, ticketController.getMyTickets);
@@ -43,6 +44,7 @@ router.post('/:id/feedback', protect, ticketController.submitFeedback);
 router.get('/:id', protect, ticketController.getTicketById);
 
 // PATCH /api/tickets/:id/status - Update status
-router.patch('/:id/status', protect, ticketController.updateTicketStatus);
+//restric customer to from changing ticket status
+router.patch('/:id/status', protect, authorize('Technician', 'Employee', 'Admin', 'Manager'), ticketController.updateTicketStatus);
 
 module.exports = router;

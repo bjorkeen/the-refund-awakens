@@ -35,9 +35,6 @@ const resizeImage = async (req, res, next) => {
     if(!req.files || req.files.length === 0)
         return next();
     
-    // Initialize the array so we can push paths into it
-    req.body.attachments = [];
-
     try{
         await Promise.all(
             req.files.map(async (file) => {
@@ -51,9 +48,9 @@ const resizeImage = async (req, res, next) => {
                     .toFormat('jpeg')
                     .jpeg({quality: 75}) //75% quality of original image
                     .toFile(outputPath);
-                
-                //relative path attached to body so Mongo can save it
-                req.body.attachments.push(`uploads/${filename}`); 
+                //security patch / manually attach properties so controller can find the file (memoryStorage skips this)
+                file.path = `uploads/${filename}`;
+                file.filename = filename;
             })
         );
         next();
