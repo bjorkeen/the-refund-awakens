@@ -295,3 +295,61 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* --- Styling for All Tickets Tab (Staff-Style Table) --- */
+
+.tableContainer {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-top: 1.5rem;
+}
+
+/* Το κουμπί View στο τέλος κάθε γραμμής */
+.viewLink {
+    background: #eff6ff; /* Απαλό μπλε όπως στον Staff */
+    border: 1px solid #dbeafe;
+    color: #2563eb;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.viewLink:hover {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+/* Formatting για τη στήλη του Technician (Assign Technician) */
+.miniTable td div span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #475569;
+    font-weight: 500;
+}
+
+/* Hover εφέ στις γραμμές του πίνακα All Tickets */
+.tableContainer .miniTable tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Responsive για να μην "σπάει" ο πίνακας σε laptop/tablet */
+@media (max-width: 1100px) {
+    .tableContainer {
+        overflow-x: auto;
+    }
+}
+
+/* Εξασφάλιση ότι το Customer Name και Email έχουν σωστή στοίχιση */
+.miniTable td div[style*="fontWeight: 600"] {
+    margin-bottom: 2px;
+}
