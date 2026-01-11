@@ -67,6 +67,22 @@ graph TB
 
 
 
+| Landing page | Customer Dashboard |
+|:------------------:|:--------------------:|
+| ![Landing page](./screenshots/landing_page.png) | ![Customer Dashboard](./screenshots/customer_dashboard.png) |
+
+| Create Ticket Form | Ticket details |
+|:------------------:|:--------------------:|
+| ![Create Ticket Form](./screenshots/create_ticket_form.png) | ![Ticket details](./screenshots/ticket_details.png) |
+
+| Staff Dashboard | Technician Dashboard |
+|:------------------:|:--------------------:|
+| ![Staff Dashboard](./screenshots/staff_dashboard.png) | ![Technician Dashboard](./screenshots/tech_dashboard.png) |
+
+| Admin Reports | Admin Panel |
+|:---------------:|:-----------:|
+| ![Admin Reports](./screenshots/admin_reports.png) | ![Admin Panel](./screenshots/admin_panel.png) |
+
 
 
 ## 🛠️ Tech Stack
@@ -140,26 +156,3 @@ You can **Sign Up** to create a new Customer user.
 
 
 ---
-
-
-## 📂 Directory Tree
-
-```
-/
-├── backend/                 # Ο κώδικας του API
-│   ├── controllers/         # Η λογική (π.χ. Ticket creation, Auth)
-│   ├── models/              # Mongoose Schemas (User, Ticket)
-│   ├── routes/              # API Endpoints definition
-│   └── services/            # Business logic services
-│
-├── frontend/                # Ο κώδικας του React App
-│   └── src/
-│       ├── components/      # Reusable UI (AuthForm, Header, etc.)
-│       ├── context/         # Global State (AccessContext)
-│       ├── pages/           # Σελίδες (CreateTicket, MyTickets)
-│       └── services/        # Axios calls προς το Backend
-│
-└── docker-compose.yml       # Ρυθμίσεις των containers
-```
-
-
