@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { getAllTicketsAdmin } from "@/services/ticketService";
 import { getAllUsers, deleteUser, createUser, updateUser } from "@/services/authService"; 
 import styles from "./AdminDashboard.module.css";
@@ -6,8 +7,14 @@ import { useNotification } from "@/context/NotificationContext";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { getFeedbackKPIs } from "@/services/ticketService";
 
+// Helper για τον τύπο υπηρεσίας (όπως στον Staff)
+function getServiceType(t) { 
+  return t.serviceType || t.type || "Repair"; 
+}
+
 const AdminDashboard = () => {
   const { showNotification } = useNotification();
+  const navigate = useNavigate();
   
   // --- Data States ---
   const [tickets, setTickets] = useState([]);
@@ -289,7 +296,7 @@ const repairReturnData = useMemo(() => {
                 <h2>Recent Activity (Last 5)</h2>
                 <button className={styles.viewAllBtn} onClick={() => setActiveTab("All Tickets")}>View Full List</button>
               </div>
-              <TicketTable data={tickets.slice(0, 5)} />
+              <SimpleTicketTable data={tickets.slice(0, 5)} />
             </div>
           </>
         );
@@ -309,7 +316,7 @@ const repairReturnData = useMemo(() => {
                 <option value="Completed">Completed</option>
               </select>
             </div>
-            <TicketTable data={filteredTickets} />
+            <AdvancedTicketTable data={filteredTickets} navigate={navigate} />
           </div>
         );
 
@@ -423,7 +430,6 @@ const repairReturnData = useMemo(() => {
           </div>
         );
         
-      // TAB 4: SETTINGS
       case "Settings":
         return (
           <div className={styles.settingsWrapper}>
@@ -522,14 +528,7 @@ const repairReturnData = useMemo(() => {
           </div>
         );
 
-      case "Reports":
-      default:
-        return (
-          <div className={styles.placeholderView}>
-            <h2>{activeTab}</h2>
-            <p>This section is currently under development.</p>
-          </div>
-        );
+      default: return null;
     }
   };
   
@@ -638,12 +637,12 @@ const repairReturnData = useMemo(() => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
 
-const TicketTable = ({ data }) => (
+// 1. Πίνακας για το Overview (Παραμένει ο αρχικός/απλός)
+const SimpleTicketTable = ({ data }) => (
   <table className={styles.miniTable}>
     <thead>
       <tr><th>Ticket ID</th><th>Customer</th><th>Status</th><th>Warranty</th></tr>
@@ -663,6 +662,70 @@ const TicketTable = ({ data }) => (
       ))}
     </tbody>
   </table>
+);
+
+// 2. Πίνακας για το All Tickets (Ακριβές αντίγραφο του Staff Table - ΜΟΝΟ οι στήλες που ζήτησες)
+const AdvancedTicketTable = ({ data, navigate }) => (
+  <div className={styles.tableContainer}>
+    <table className={styles.miniTable}>
+      <thead>
+        <tr>
+          <th>Ticket ID</th>
+          <th>Customer</th>
+          <th>Type</th>
+          <th>Assign Technician</th>
+          <th>Status Action</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((t) => (
+          <tr key={t._id}>
+            <td style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>
+              #{t.ticketId || t._id.substring(t._id.length - 8).toUpperCase()}
+            </td>
+            <td>
+              <div style={{ fontWeight: "600" }}>{t.contactInfo?.fullName || t.customer?.fullName || 'N/A'}</div>
+              <div style={{ fontSize: "0.8rem", color: "#64748b" }}>{t.contactInfo?.email || t.customer?.email}</div>
+            </td>
+            <td>
+              <span style={{ 
+                fontSize: '0.75rem', fontWeight: 'bold', padding: '4px 10px', borderRadius: '6px',
+                backgroundColor: getServiceType(t) === 'Return' ? '#fef2f2' : '#eff6ff',
+                color: getServiceType(t) === 'Return' ? '#dc2626' : '#2563eb',
+                border: '1px solid currentColor',
+                display: 'inline-block'
+              }}>
+                {getServiceType(t).toUpperCase()}
+              </span>
+            </td>
+            <td>
+              <div style={{ fontSize: "0.9rem", color: "#475569" }}>
+                {t.assignedRepairCenter?.fullName || t.assignedTechnician?.fullName ? (
+                  <span>🔧 {t.assignedRepairCenter?.fullName || t.assignedTechnician?.fullName}</span>
+                ) : (
+                  <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>Unassigned</span>
+                )}
+              </div>
+            </td>
+            <td>
+              <span className={`${styles.badge} ${styles[t.status?.toLowerCase().replace(/ /g, '-')] || styles.submitted}`}>
+                {t.status}
+              </span>
+            </td>
+            <td>
+              <button 
+                className={styles.viewLink} 
+                onClick={() => navigate(`/tickets/${t._id}`)}
+              >
+                View
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
 );
 
 const StatCard = ({ label, value, icon, color }) => (
