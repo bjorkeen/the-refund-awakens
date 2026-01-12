@@ -6,6 +6,7 @@ import {
   addInternalComment,
 } from "@/services/ticketService";
 import { useAccess } from "@/context/AccessContext";
+import { escalateTicket } from "@/services/ticketService";
 import "./TicketDetails.css";
 
 const STEPS = ["Submitted", "In Progress", "Completed", "Closed"];
@@ -76,6 +77,17 @@ export default function TicketDetailsPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // Escalate Handler
+  const handleEscalate = async () => {
+    try {
+      const updated = await escalateTicket(id);
+      setTicket(updated);
+      alert("✅ Ticket escalated.");
+    } catch (err) {
+      alert(err?.response?.data?.message || "Failed to escalate the ticket");
+    }
+  };
+
   // Fetch Ticket
   const fetchTicket = async () => {
     try {
@@ -130,9 +142,12 @@ export default function TicketDetailsPage() {
       setTicket((prev) => ({ ...prev, status: newStatus }));
       await updateTicketStatus(id, newStatus);
     } catch (err) {
-      const msg = err?.response?.data?.message || "Failed to update status";
-      alert(msg);
-      fetchTicket();
+      console.log(err);
+      alert(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to escalate the ticket"
+      );
     }
   };
 
@@ -190,51 +205,85 @@ export default function TicketDetailsPage() {
           </div>
 
           {/* Timeline */}
-          {normalizeStatus(ticket.status) !== 'Cancelled' && normalizeStatus(ticket.status) !== 'Closed' && (
-            <div className="td-timeline-wrapper">
-              <div className="td-timeline-container">
-                {(() => {
-                  const isDropoff = ticket.deliveryMethod === 'dropoff' || 
-                                   ticket.address === 'Store Drop-off' || 
-                                   ticket.city === '-';
-                  
-                  const steps = isDropoff 
-                    ? ['Submitted', 'In Progress', 'Ready for Pickup', 'Completed']
-                    : ['Submitted', 'Shipping', 'In Progress', 'Shipped Back', 'Completed'];
-                  
-                  let currentStatus = normalizeStatus(ticket.status);
-                  
-                  if (currentStatus === 'Pending Validation' || currentStatus === 'Waiting for Parts') {
-                    currentStatus = 'In Progress';
-                  }
-                  
-                  const currentIndex = steps.findIndex(s => s === currentStatus);
-                  const progressWidth = currentIndex < 0 ? 0 : ((currentIndex + 1) / steps.length) * 100;
-                  
-                  return (
-                    <>
-                      <div className="td-timeline-progress-track">
-                        <div className="td-timeline-progress-fill" style={{ width: `${progressWidth}%` }}></div>
-                      </div>
-                      
-                      <div className="td-timeline-steps">
-                        {steps.map((step, idx) => (
-                          <div key={step} className="td-timeline-step">
-                            <div className={`td-timeline-step-circle ${step === currentStatus || idx <= currentIndex ? 'active' : ''}`}>
-                              {idx + 1}
+          {normalizeStatus(ticket.status) !== "Cancelled" &&
+            normalizeStatus(ticket.status) !== "Closed" && (
+              <div className="td-timeline-wrapper">
+                <div className="td-timeline-container">
+                  {(() => {
+                    const isDropoff =
+                      ticket.deliveryMethod === "dropoff" ||
+                      ticket.address === "Store Drop-off" ||
+                      ticket.city === "-";
+
+                    const steps = isDropoff
+                      ? [
+                          "Submitted",
+                          "In Progress",
+                          "Ready for Pickup",
+                          "Completed",
+                        ]
+                      : [
+                          "Submitted",
+                          "Shipping",
+                          "In Progress",
+                          "Shipped Back",
+                          "Completed",
+                        ];
+
+                    let currentStatus = normalizeStatus(ticket.status);
+
+                    if (
+                      currentStatus === "Pending Validation" ||
+                      currentStatus === "Waiting for Parts"
+                    ) {
+                      currentStatus = "In Progress";
+                    }
+
+                    const currentIndex = steps.findIndex(
+                      (s) => s === currentStatus
+                    );
+                    const progressWidth =
+                      currentIndex < 0
+                        ? 0
+                        : ((currentIndex + 1) / steps.length) * 100;
+
+                    return (
+                      <>
+                        <div className="td-timeline-progress-track">
+                          <div
+                            className="td-timeline-progress-fill"
+                            style={{ width: `${progressWidth}%` }}
+                          ></div>
+                        </div>
+
+                        <div className="td-timeline-steps">
+                          {steps.map((step, idx) => (
+                            <div key={step} className="td-timeline-step">
+                              <div
+                                className={`td-timeline-step-circle ${
+                                  step === currentStatus || idx <= currentIndex
+                                    ? "active"
+                                    : ""
+                                }`}
+                              >
+                                {idx + 1}
+                              </div>
+                              <div
+                                className={`td-timeline-step-label ${
+                                  step === currentStatus ? "active" : ""
+                                }`}
+                              >
+                                {step}
+                              </div>
                             </div>
-                            <div className={`td-timeline-step-label ${step === currentStatus ? 'active' : ''}`}>
-                              {step}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  );
-                })()}
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div className="td-content">
             <div className="td-grid">
@@ -250,34 +299,35 @@ export default function TicketDetailsPage() {
                 </div>
 
                 {/* 2. Attachments Section */}
-                {ticket.issue?.attachments && ticket.issue.attachments.length > 0 && (
-                  <div className="td-section">
-                    <div className="td-section-title">Attachments</div>
-                    <div className="td-attachments-grid">
-                      {ticket.issue.attachments.map((file, index) => {
-                        // Adjust URL based on your backend logic
-                        const cleanUrl = file.startsWith("http")
-                          ? file
-                          : `http://localhost:5050/${file}`;
-                        return (
-                          <div
-                            key={index}
-                            className="td-attachment-item"
-                            onClick={() => openLightbox(cleanUrl)}
-                          >
-                            <img
-                              src={cleanUrl}
-                              alt="Attachment"
-                              onError={(e) =>
-                                (e.target.style.display = "none")
-                              }
-                            />
-                          </div>
-                        );
-                      })}
+                {ticket.issue?.attachments &&
+                  ticket.issue.attachments.length > 0 && (
+                    <div className="td-section">
+                      <div className="td-section-title">Attachments</div>
+                      <div className="td-attachments-grid">
+                        {ticket.issue.attachments.map((file, index) => {
+                          // Adjust URL based on your backend logic
+                          const cleanUrl = file.startsWith("http")
+                            ? file
+                            : `http://localhost:5050/${file}`;
+                          return (
+                            <div
+                              key={index}
+                              className="td-attachment-item"
+                              onClick={() => openLightbox(cleanUrl)}
+                            >
+                              <img
+                                src={cleanUrl}
+                                alt="Attachment"
+                                onError={(e) =>
+                                  (e.target.style.display = "none")
+                                }
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* 3. Internal Comments Section */}
                 {user?.role !== "Customer" && (
@@ -455,7 +505,9 @@ export default function TicketDetailsPage() {
                 )}
 
                 {/* Controls (Action) - Updated Logic Kept */}
-                {(user.role === "Technician" || user.role === "Admin" || user.role === "Employee") && (
+                {(user.role === "Technician" ||
+                  user.role === "Admin" ||
+                  user.role === "Employee") && (
                   <div className="td-section">
                     <div
                       className="td-section-title"
@@ -484,6 +536,16 @@ export default function TicketDetailsPage() {
                             )
                           )}
                     </select>
+                    {user?.role === "Technician" && (
+                      <button
+                        type="button"
+                        onClick={handleEscalate}
+                        disabled={ticket?.escalated}
+                        style={{ width: "100%", marginTop: "10px" }}
+                      >
+                        🚨 {ticket?.escalated ? "Escalated" : "Escalate"}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

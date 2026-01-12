@@ -1,39 +1,39 @@
-import api from './api';
+import api from "./api";
 
 // --- CUSTOMER FUNCTIONS ---
 
 // Create Ticket with FormData (Supports Images)
 export const createTicket = async (ticketData) => {
   const formData = new FormData();
-  
-  Object.keys(ticketData).forEach(key => {
-    if (key === 'photos' && Array.isArray(ticketData.photos)) {
-      ticketData.photos.forEach(file => {
-        formData.append('photos', file); 
+
+  Object.keys(ticketData).forEach((key) => {
+    if (key === "photos" && Array.isArray(ticketData.photos)) {
+      ticketData.photos.forEach((file) => {
+        formData.append("photos", file);
       });
     } else {
       formData.append(key, ticketData[key]);
     }
   });
 
-  const response = await api.post('/tickets', formData, {
+  const response = await api.post("/tickets", formData, {
     headers: {
-      'Content-Type': 'multipart/form-data'
-    }
+      "Content-Type": "multipart/form-data",
+    },
   });
   return response.data;
 };
 
 // Get logged-in user's tickets
 export const getMyTickets = async () => {
-  const response = await api.get('/tickets');
+  const response = await api.get("/tickets");
   return response.data;
 };
 
 // despoina service call for staff
 export const getAllTickets = async () => {
-    const response = await api.get('/tickets/all'); 
-    return response.data;
+  const response = await api.get("/tickets/all");
+  return response.data;
 };
 // despoina service call for staff to assign technician
 export const assignTicket = async (id, technicianId) => {
@@ -42,7 +42,7 @@ export const assignTicket = async (id, technicianId) => {
 };
 // despoina service call for manager
 export const getAllTicketsAdmin = async () => {
-  const response = await api.get('/tickets/admin/all');
+  const response = await api.get("/tickets/admin/all");
   return response.data;
 };
 
@@ -55,7 +55,7 @@ export const getTicket = async (id) => {
 // --- TECHNICIAN FUNCTIONS ---
 
 export const getAssignedTickets = async () => {
-  const response = await api.get('/tickets/assigned');
+  const response = await api.get("/tickets/assigned");
   return response.data;
 };
 
@@ -65,7 +65,10 @@ export const updateTicketStatus = async (id, status) => {
 };
 // --- NEW FUNCTION FOR ADDING INTERNAL COMMENTS ---
 export const addInternalComment = async (id, text, type) => {
-  const response = await api.post(`/tickets/${id}/internal-comments`, { text, type });
+  const response = await api.post(`/tickets/${id}/internal-comments`, {
+    text,
+    type,
+  });
   return response.data;
 };
 
@@ -78,9 +81,15 @@ export const submitFeedback = async (id, feedbackData) => {
 };
 
 export const getFeedbackStats = async () => {
-  const response = await api.get('/tickets/analytics/kpi');
+  const response = await api.get("/tickets/analytics/kpi");
   return response.data;
 };
 
 // Alias for AdminDashboard compatibility
 export const getFeedbackKPIs = getFeedbackStats;
+
+// escalate ticket function
+export const escalateTicket = async (id) => {
+  const res = await api.post(`/tickets/${id}/escalate`);
+  return res.data;
+};

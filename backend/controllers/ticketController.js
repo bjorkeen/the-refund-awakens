@@ -134,7 +134,7 @@ exports.createTicket = async (req, res) => {
     // logic : extract file paths
 
     // fix : get files from req.files provided by multer, not req.body
-    const filePaths = req.files ? req.files.map(file => file.path) : [];
+    const filePaths = req.files ? req.files.map((file) => file.path) : [];
 
     const newTicket = new Ticket({
       customer: req.user.userId,
@@ -258,9 +258,14 @@ exports.updateTicketStatus = async (req, res) => {
     const ticket = await Ticket.findById(req.params.id).populate("customer");
     if (!ticket) return res.status(404).json({ message: "Ticket not found" });
 
-    // security patch prevent technician from updating unassigned tickets 
-    if (req.user.role === "Technician" && ticket.assignedRepairCenter?.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "You are not assigned to this ticket" });
+    // security patch prevent technician from updating unassigned tickets
+    if (
+      req.user.role === "Technician" &&
+      ticket.assignedRepairCenter?.toString() !== req.user.userId
+    ) {
+      return res
+        .status(403)
+        .json({ message: "You are not assigned to this ticket" });
     }
 
     const newStatus = status;
@@ -436,5 +441,33 @@ exports.getFeedbackKPIs = async (req, res) => {
     res.json(stats);
   } catch (err) {
     res.status(500).send("Server Error");
+  }
+};
+
+exports.escalateTicket = async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+
+    if (req.user.role === "Customer") {
+      return res
+        .status(403)
+        .json({ message: "Customers cannot escalate tickets." });
+    }
+
+    ticket.escalated = true;
+    ticket.escalatedAt = new Date();
+
+    await ticket.save();
+
+    const updated = await Ticket.findById(ticket._id)
+      .populate("customer", "fullName email")
+      .populate("assignedRepairCenter", "fullName")
+      .populate("internalComments.by", "fullName email role");
+
+    res.json(updated);
+  } catch (err) {
+    console.error("escalateTicket error:", err);
+    res.status(500).json({ message: "Server error escalating ticket" });
   }
 };

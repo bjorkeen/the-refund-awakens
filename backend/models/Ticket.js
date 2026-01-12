@@ -54,6 +54,8 @@ const ticketSchema = new mongoose.Schema(
       // christos attachments array definition (Main storage)
       attachments: [{ type: String }],
     },
+    escalated: { type: Boolean, default: false },
+    escalatedAt: { type: Date, default: null },
 
     status: {
       type: String,
