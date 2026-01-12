@@ -73,7 +73,7 @@ graph TB
 
 | Create Ticket Form | Ticket details |
 |:------------------:|:--------------------:|
-| ![Create Ticket Form](./screenshots/create_ticket_form.png) | ![Ticket details](./screenshots/ticket_details.png) |
+| ![Create Ticket Form](./screenshots/create_ticket_form.png) | ![Ticket details](./screenshots/ticket-details_page.png) |
 
 | Staff Dashboard | Technician Dashboard |
 |:------------------:|:--------------------:|
