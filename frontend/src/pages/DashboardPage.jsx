@@ -9,7 +9,7 @@ const DashboardPage = () => {
   const { user } = useAccess();
 
   if (!user)
-    return <div className="p-8 text-center">Loading user profile...</div>;
+    return <div className="p-8 text-center">Please sign in to view this page.</div>;
 
   // Smart Switching Logic
   switch (user.role) {
