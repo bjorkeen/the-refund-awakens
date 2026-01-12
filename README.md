@@ -1,132 +1,158 @@
-# Returns & Repairs Management System (RRMS)
 
-Το σύστημα διαχείρισης επιστροφών και επισκευών (RRMS) είναι μια web εφαρμογή που ψηφιοποιεί τον κύκλο ζωής των επισκευών, συνδέοντας πελάτες, υπαλλήλους και τεχνικούς.
+# Electronics R&R - Service Management System
 
-## 🏗️ Αρχιτεκτονική (Tech Stack)
+A full-stack web application for managing electronic repair and return requests. Designed to streamline communication between Customers, Technicians, and Employees.
 
-Το έργο ακολουθεί αρχιτεκτονική MERN σε περιβάλλον Docker:
+## 🏗️ System Architecture
 
-* **Frontend**: React + Vite  (Τρέχει στη θύρα `3000`)
-* **Backend**: Node.js + Express (Τρέχει στη θύρα `5050`)
-* **Database**: MongoDB (Τρέχει στη θύρα `27017` με persistent volume)
-* **DevOps**: Docker Compose για ενορχήστρωση των services
+This diagram illustrates the high-level architecture of the application, deployed via Docker Containers.
+
+# System Architecture Diagram
+
+```mermaid
+graph TB
+    User[End User]
+    
+    subgraph Frontend[Frontend Service]
+        NginxServer[Nginx Server]
+        ReactSPA[React SPA]
+    end
+
+    subgraph Backend[Backend Service]
+        subgraph API[API Service]
+            EntryPoint[Application Entry Point<br/>backend/index.js]
+            Router[API Router<br/>backend/routes]
+            Controllers[Controllers<br/>backend/controllers]
+            Services[Services<br/>backend/services]
+            Models[Data Access Layer<br/>backend/models]
+        end
+    end
+
+    subgraph Database[MongoDB Database]
+        MongoServer[MongoDB Server]
+        DataStore[Data Storage]
+    end
+
+    User -->|Uses| NginxServer
+    NginxServer -->|Serves| ReactSPA
+    NginxServer -->|Makes API requests to| Router
+    EntryPoint -->|Sets up| Router
+    Router -->|Routes requests to| Controllers
+    Controllers -->|Calls| Services
+    Services -->|Uses| Models
+    Models -->|Performs CRUD operations on| MongoServer
+    MongoServer -->|Reads from and writes to| DataStore
+
+    style Frontend fill:#dae8fc,stroke:#6c8ebf
+    style Backend fill:#dae8fc,stroke:#6c8ebf
+    style API fill:#dae8fc,stroke:#6c8ebf
+    style Database fill:#dae8fc,stroke:#6c8ebf
+```
+
+
+
+## 🚀 Key Features
+
+    Role-Based Access Control: Distinct dashboards for Customers, Technicians, Employees, and Admins.
+
+    Ticket Lifecycle Management: Full workflow from "Submitted" to "Completed" with status tracking.
+
+    Placement Algorithm: Smart resource allocation logic (Simulation).
+
+    Attachments & Media: Support for photo uploads and invoice handling.
+
+    Reporting: Automated generation of service reports.
+
+## 📸 Screenshots
+
+
+
+| Landing page | Customer Dashboard |
+|:------------------:|:--------------------:|
+| ![Landing page](./screenshots/landing_page.png) | ![Customer Dashboard](./screenshots/customer_dashboard.png) |
+
+| Create Ticket Form | Ticket details |
+|:------------------:|:--------------------:|
+| ![Create Ticket Form](./screenshots/create_ticket_form.png) | ![Ticket details](./screenshots/ticket_details.png) |
+
+| Staff Dashboard | Technician Dashboard |
+|:------------------:|:--------------------:|
+| ![Staff Dashboard](./screenshots/staff_dashboard.png) | ![Technician Dashboard](./screenshots/tech_dashboard.png) |
+
+| Admin Reports | Admin Panel |
+|:---------------:|:-----------:|
+| ![Admin Reports](./screenshots/admin_reports.png) | ![Admin Panel](./screenshots/admin_panel.png) |
+
+
+
+## 🛠️ Tech Stack
+
+    Frontend: React.js, Vite, Axios, CSS Modules.
+
+    Backend: Node.js, Express.js.
+
+    Database: MongoDB (Mongoose ODM).
+
+    DevOps: Docker, Docker Compose, Nginx.
+
+    Tools: Git, GitHub Actions (CI/CD).
+
+## 🏁 Getting Started
+
+### Prerequisites
+
+    Docker & Docker Compose installed.
+
+### Installation & Run
+
+1. Clone the repository:
+
+```bash
+    git clone [https://github.com/bjorkeen/the-refund-awakens.git](https://github.com/bjorkeen/the-refund-awakens.git)
+cd the-refund-awakens
+```
+
+2. Start the application (Production Mode):
+
+```bash
+docker compose up --build
+```
+
+3. Access the app:
+
+    Frontend: http://localhost:3000
+
+    Backend API: http://localhost:5050
 
 ---
 
-## 🚀 Γρήγορη Εκκίνηση (Προτείνεται)
+## 🔑 Demo Accounts
 
-Αυτός είναι ο πιο εύκολος τρόπος για να τρέξετε όλο το σύστημα (Βάση, Backend, Frontend) με μία εντολή.
+You can **Sign Up** to create a new Customer user.
 
-### Προαπαιτούμενα
-* [Docker Desktop](https://www.docker.com/products/docker-desktop/) εγκατεστημένο και να τρέχει.
-
-### Οδηγίες
-1.  Ανοίξτε τερματικό στον φάκελο του project.
-2.  Τρέξτε την εντολή:
-    ```bash
-    docker compose up -d --build
-    ```
-3.  Περιμένετε μέχρι να δείτε ότι τα containers (frontend, backend, mongo) είναι `Started`.
-4.  Ανοίξτε τον browser στο: **http://localhost:3000**
-
-### Χρήσιμες Εντολές Docker
-* **Stop & Remove:** `docker compose down` (Σταματάει τα πάντα).
-* **Δείτε τα logs (Backend):** `docker logs -f my-app-backend` (Χρήσιμο για debugging).
-* **Restart Backend (μετά από αλλαγή κώδικα):** `docker compose restart backend_service`.
-* **Δείτε ποια containers τρέχουν:** `docker compose ps`.
+* Password must contain at least 8 characters, 1 number, and 1 symbol (e.g. `Demo123!`).
 
 ---
 
-## 💻 Hybrid Development (Για UI Developers)
-
-Αν δουλεύετε **μόνο στο Frontend** και θέλετε ταχύτατο Hot Reload, μπορείτε να τρέχετε το Backend/DB στο Docker και το React τοπικά στον υπολογιστή σας.
-
-1.  **Σηκώστε Υποδομές (Backend + DB):**
-    ```bash
-    docker compose up -d backend_service mongo_db
-    ```
-2.  **Τρέξτε το Frontend τοπικά:**
-    * Ανοίξτε νέο τερματικό.
-    * Πηγαίνετε στον φάκελο frontend: `cd frontend`
-    * Εγκατάσταση βιβλιοθηκών (μόνο την πρώτη φορά): `npm install`
-    * Εκκίνηση: `npm run dev`
-3.  Το Frontend θα τρέχει στο **http://localhost:5173** (προσοχή στο port, το Vite τοπικά διαφέρει από το Docker).
-
----
-
-## 📂 Δομή Φακέλων
+## Folder Structure
 
 ```
 /
-├── backend/                 # Ο κώδικας του API
-│   ├── controllers/         # Η λογική (π.χ. Ticket creation, Auth)
+├── backend/                 # API code
+│   ├── controllers/         # Business logic (e.g. Ticket creation, Auth)
 │   ├── models/              # Mongoose Schemas (User, Ticket)
 │   ├── routes/              # API Endpoints definition
 │   └── services/            # Business logic services
 │
-├── frontend/                # Ο κώδικας του React App
+├── frontend/                # React App code
 │   └── src/
 │       ├── components/      # Reusable UI (AuthForm, Header, etc.)
 │       ├── context/         # Global State (AccessContext)
-│       ├── pages/           # Σελίδες (CreateTicket, MyTickets)
-│       └── services/        # Axios calls προς το Backend
+│       ├── pages/           # Pages (CreateTicket, MyTickets)
+│       └── services/        # Axios calls to the Backend
 │
-└── docker-compose.yml       # Ρυθμίσεις των containers
+└── docker-compose.yml       # Container configurations
 ```
 
-## 🔑 Demo Λογαριασμοί
-
-Επειδή η βάση είναι φρέσκια, πρέπει να κάνετε **Sign Up** έναν νέο χρήστη κατά την πρώτη εκκίνηση.
-* Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες, 1 αριθμό και 1 σύμβολο (π.χ. `Demo123!`).
 
 ---
-
-
-## 🤝 Git Workflow (ΠΩΣ ΔΟΥΛΕΥΟΥΜΕ)
-
-Για να μην χάνουμε κώδικα και να μην έχουμε συγκρούσεις (conflicts), ακολουθούμε **ΠΑΝΤΑ** αυτά τα βήματα:
-
-### Βήμα 1: Ξεκινάμε ΠΑΝΤΑ με ενημέρωση
-Πριν γράψετε έστω και μια γραμμή κώδικα, σιγουρευτείτε ότι έχετε την τελευταία έκδοση:
-1. Πηγαίνουμε στο κεντρικό branch:
-   `git checkout main`
-2. Κατεβάζουμε τις αλλαγές των άλλων:
-   `git pull origin main`
-
-### Βήμα 2: Φτιάχνουμε ΔΙΚΟ ΜΑΣ Branch
-**ΑΠΑΓΟΡΕΥΕΤΑΙ** να γράφετε κώδικα απευθείας στο `main`.
-Φτιάξτε ένα νέο branch με περιγραφικό όνομα (π.χ. `feature/header`, `fix/login-bug`):
-
-```bash
-git checkout -b feature/to-onoma-tou-task-sas
-
-```
-
-### Βήμα 3: Κάνουμε δουλειά & Commit
-
-Κάντε τις αλλαγές σας. Όταν τελειώσετε:
-
-```bash
-git add .
-git commit -m "Περιγραφή του τι έφτιαξα"
-```
-
-### Βήμα 4: Ανέβασμα (Push)
-
-Στέλνουμε το branch μας στο GitHub:
-
-```bash
-git push origin feature/to-onoma-tou-task-sas
-```
-
-(Μετά κάνουμε Pull Request στο GitHub για να ενωθεί με το main).
-
----
-
-### 2. Πού δοκιμάζουν τα Components (Playground)
-
-Αντί να χαλάμε το `MyTickets.jsx`, θα φτιάξουμε μια προσωρινή σελίδα **`Playground.jsx`**.
-* **Τι είναι:** Μια λευκή σελίδα όπου μπορούν να κάνουν import το component τους (π.χ. `<Header />`, `<Footer />`) για να δουν πώς φαίνεται.
-* **Πλεονέκτημα:** Δεν επηρεάζει την κανονική ροή της εφαρμογής.
-
-"Για να δείτε αυτό που φτιάχνετε, ανοίξτε το αρχείο frontend/src/pages/Playground.jsx, κάντε import το component σας εκεί και μπείτε στο http://localhost:3000/test. Μην πειράζετε τις άλλες σελίδες!"

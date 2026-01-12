@@ -22,3 +22,4 @@ tree.txt
 
 backend/uploads/*
 !backend/uploads/.gitkeep
+./codeviz/
