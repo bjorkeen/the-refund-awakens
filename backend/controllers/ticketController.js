@@ -66,12 +66,10 @@ exports.createTicket = async (req, res) => {
     let resolutionOptions = [];
     let initialStatus = "Submitted";
 
-    if (serviceType === "Return") {
-      // logic : calculate days since purchase
+if (serviceType === "Return") {
       const pDate = new Date(purchaseDate);
       const diffDays = Math.ceil((new Date() - pDate) / (1000 * 60 * 60 * 24));
 
-      // logic : hard block if return period > 15 days
       if (diffDays > 15) {
         return res.status(400).json({
           success: false,
@@ -80,28 +78,26 @@ exports.createTicket = async (req, res) => {
         });
       }
 
-      // logic : set resolution options for valid returns
       resolutionOptions = ["Refund", "Replacement"];
-
-      // logic : returns skip auto-assignment to wait for staff validation
       initialStatus = "Pending Validation";
       assignedTech = null;
     } else {
-      // logic : smart assignment logic for repairs
       resolutionOptions = ["Repair"];
-      initialStatus = "Submitted";
 
-      // logic : find technicians with matching specialty
+      if (deliveryMethod === "courier") {
+        initialStatus = "Shipping";
+      } else {
+        initialStatus = "Submitted";
+      }
+
       const eligibleTechs = await User.find({
         role: "Technician",
         specialty: type,
       });
 
-      // logic : check workload less than 5 active tickets
       for (const tech of eligibleTechs) {
         const activeTickets = await Ticket.countDocuments({
           assignedRepairCenter: tech._id,
-          // logic : exclude completed/closed tickets from workload count
           status: { $nin: ["Completed", "Closed", "Cancelled", "Rejected"] },
         });
 
@@ -111,7 +107,6 @@ exports.createTicket = async (req, res) => {
         }
       }
 
-      // logic : fallback to general technician if specialists are full
       if (!assignedTech) {
         const generalTechs = await User.find({
           role: "Technician",

@@ -4,13 +4,26 @@ import { getAllTicketsAdmin } from "@/services/ticketService";
 import { getAllUsers, deleteUser, createUser, updateUser } from "@/services/authService"; 
 import styles from "./AdminDashboard.module.css";
 import { useNotification } from "@/context/NotificationContext";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from 'recharts';
 import { getFeedbackKPIs } from "@/services/ticketService";
 
 // Helper για τον τύπο υπηρεσίας (όπως στον Staff)
 function getServiceType(t) { 
   return t.serviceType || t.type || "Repair"; 
 }
+
+// Helper για τα Stale Tickets (παραμένουν ανοιχτά >5 λεπτά)
+const getStaleTickets = (tickets) => {
+  const FIVE_MINUTES_IN_MS = 5 * 60 * 1000;
+  const now = new Date();
+  
+  return tickets.filter(t => {
+    const isClosed = ["Completed", "Closed", "Cancelled"].includes(t.status);
+    const createdDate = new Date(t.createdAt);
+    const age = now - createdDate;
+    return !isClosed && age > FIVE_MINUTES_IN_MS;
+  });
+};
 
 const AdminDashboard = () => {
   const { showNotification } = useNotification();
@@ -25,6 +38,9 @@ const AdminDashboard = () => {
   // --- Filter States ---
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [filterType, setFilterType] = useState("All");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   // --- Modal States ---
   const [showModal, setShowModal] = useState(false);
@@ -55,6 +71,9 @@ const AdminDashboard = () => {
   // --- Reports/KPI State ---
   const [kpiData, setKpiData] = useState([]);
   const COLORS = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e']; // Red to Green logic
+
+  // Stale Tickets Memoization
+  const staleTickets = useMemo(() => getStaleTickets(tickets), [tickets]);
 
 
   // --- LOAD DATA ---
@@ -97,16 +116,30 @@ const AdminDashboard = () => {
   }, []);
 
 
-  // --- STATISTICS CALCULATIONS ---
+  // STATISTICS CALCULATIONS 
   const filteredTickets = useMemo(() => {
+    const from = dateFrom ? new Date(dateFrom) : null;
+    const to = dateTo ? new Date(dateTo) : null;
+    if (to) to.setHours(23, 59, 59, 999); // includes the whole end day
+
     return tickets.filter((t) => {
-      const matchesSearch =
-        t.ticketId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.contactInfo?.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = t.ticketId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            t.contactInfo?.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = filterStatus === "All" || t.status === filterStatus;
-      return matchesSearch && matchesStatus;
+      const ticketType = getServiceType(t);
+      const matchesType = filterType === "All" || ticketType === filterType;
+
+      // Date Range Logic
+      let matchesDate = true;
+      if (from || to) {
+        const ticketDate = new Date(t.updatedAt || t.createdAt);
+        if (from && ticketDate < from) matchesDate = false;
+        if (to && ticketDate > to) matchesDate = false;
+      }
+
+      return matchesSearch && matchesStatus && matchesType && matchesDate;
     });
-  }, [tickets, searchTerm, filterStatus]);
+  }, [tickets, searchTerm, filterStatus, filterType, dateFrom, dateTo]);
 
   const stats = useMemo(() => {
     const total = tickets.length;
@@ -124,30 +157,46 @@ const AdminDashboard = () => {
     };
   }, [tickets]);
 
-  // --- REPORTS COMPUTED VALUES ---
-  const chartData = useMemo(() => {
-    const dataArray = Array.isArray(kpiData) ? kpiData : [];
-    return [1, 2, 3, 4, 5].map(num => {
-      const found = dataArray.find(d => d._id === num);
-      return { rating: `${num} Star`, count: found ? found.count : 0 };
+  // REPORTS COMPUTED VALUES 
+  const filteredFeedbackData = useMemo(() => {
+    // Filter tickets with feedback by date range
+    const ticketsWithFeedback = filteredTickets.filter(t => t.feedback && t.feedback.rating);
+    
+    // Count ratings 1-5
+    const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    ticketsWithFeedback.forEach(t => {
+      const rating = t.feedback.rating;
+      if (rating >= 1 && rating <= 5) {
+        counts[rating]++;
+      }
     });
-  }, [kpiData]);
+    
+    return [1, 2, 3, 4, 5].map(num => ({
+      _id: num,
+      count: counts[num]
+    }));
+  }, [filteredTickets]);
+
+  const chartData = useMemo(() => {
+    return filteredFeedbackData.map(item => ({
+      rating: `${item._id} Star`,
+      count: item.count
+    }));
+  }, [filteredFeedbackData]);
 
   const totalReviews = useMemo(() => {
-    const dataArray = Array.isArray(kpiData) ? kpiData : [];
-    return dataArray.reduce((acc, curr) => acc + curr.count, 0);
-  }, [kpiData]);
+    return filteredFeedbackData.reduce((acc, curr) => acc + curr.count, 0);
+  }, [filteredFeedbackData]);
 
   const avgRating = useMemo(() => {
-    const dataArray = Array.isArray(kpiData) ? kpiData : [];
     return totalReviews > 0 
-      ? (dataArray.reduce((a, b) => a + (b._id * b.count), 0) / totalReviews).toFixed(1) 
+      ? (filteredFeedbackData.reduce((a, b) => a + (b._id * b.count), 0) / totalReviews).toFixed(1) 
       : 0;
-  }, [kpiData, totalReviews]);
+  }, [filteredFeedbackData, totalReviews]);
 
   // --- TICKET STATUS DISTRIBUTION FOR PIE CHART ---
   const statusData = useMemo(() => {
-  const counts = tickets.reduce((acc, ticket) => {
+  const counts = filteredTickets.reduce((acc, ticket) => {
     const status = ticket.status || "Unknown";
     acc[status] = (acc[status] || 0) + 1;
     return acc;
@@ -157,18 +206,67 @@ const AdminDashboard = () => {
     name: status,
     count: counts[status]
   }));
-}, [tickets]);
+}, [filteredTickets]);
 
 // --- REPAIR VS RETURN DATA FOR PIE CHART ---
-const repairReturnData = useMemo(() => {
-  const repairs = tickets.filter(t => t.serviceType === "Repair").length;
-  const returns = tickets.filter(t => t.serviceType === "Return").length;
-  
-  return [
-    { name: "Repair", value: repairs, color: "#10b981" },
-    { name: "Return", value: returns, color: "#f59e0b" }
-  ];
-}, [tickets]);
+  const repairReturnData = useMemo(() => {
+    const repairs = filteredTickets.filter(t => t.serviceType === "Repair").length;
+    const returns = filteredTickets.filter(t => t.serviceType === "Return").length;
+    
+    return [
+      { name: "Repair", value: repairs, color: "#10b981" },
+      { name: "Return", value: returns, color: "#f59e0b" }
+    ];
+  }, [filteredTickets]);
+
+// TICKET TYPE DISTRIBUTION (Smartphones, TVs, etc.)
+  const ticketTypeData = useMemo(() => {
+    const counts = filteredTickets.reduce((acc, t) => {
+      const type = t.product?.type || "Other"; 
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.keys(counts).map(type => ({
+      name: type,
+      value: counts[type]
+    }));
+  }, [filteredTickets]);
+
+
+// Colors for the Pie Chart slices
+const TYPE_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#64748b'];
+
+// ESCALATED TICKETS DATA 
+  const escalationData = useMemo(() => {
+    const escalatedCount = filteredTickets.filter(t => t.escalated === true).length;
+    const normalCount = filteredTickets.length - escalatedCount;
+
+    return [
+      { name: 'Escalated', value: escalatedCount },
+      { name: 'Normal', value: normalCount }
+    ];
+  }, [filteredTickets]);
+
+// Χρώματα για το γράφημα (Κόκκινο για τα Escalated)
+const ESCALATION_COLORS = ['#ef4444', '#e2e8f0'];
+
+// MONTHLY TRENDS DATA - Repairs vs Returns by Month
+const monthlyData = useMemo(() => {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const data = months.map(month => ({ name: month, repairs: 0, returns: 0 }));
+
+  filteredTickets.forEach(t => {
+    const monthIndex = new Date(t.createdAt).getMonth();
+    if (t.serviceType === "Return") {
+      data[monthIndex].returns++;
+    } else {
+      data[monthIndex].repairs++;
+    }
+  });
+  return data;
+}, [filteredTickets]);
+
 
   // --- STATISTICS (USERS)  ---
   const userStats = useMemo(() => {
@@ -269,11 +367,31 @@ const repairReturnData = useMemo(() => {
       case "Overview":
         return (
           <>
+          {/* TICKET ALERT BOX */}
+          {staleTickets.length > 0 && (
+            <div className={styles.staleAlert}>
+              <div className={styles.alertIcon}>⚠️</div>
+              <div className={styles.alertText}>
+                <strong>Attention:</strong> There are {staleTickets.length} tickets open for more than 5 minutes.
+              </div>
+              <button 
+                className={styles.alertAction}
+                onClick={() => {
+                  setFilterStatus("All");
+                  setSearchTerm("");
+                  setActiveTab("All Tickets"); // Switch to list 
+                }}
+              >
+                View Stale Tickets
+              </button>
+            </div>
+          )}
             <div className={styles.statsGrid}>
               <StatCard label="Total Tickets" value={stats.total} icon="📦" color="#2563eb" />
               <StatCard label="Open Requests" value={stats.pending} icon="🕒" color="#f59e0b" />
               <StatCard label="Completed" value={stats.completed} icon="✅" color="#10b981" />
               <StatCard label="In Warranty" value={stats.underWarranty} icon="🛡️" color="#3b82f6" />
+              <StatCard label="Stale Tickets" value={staleTickets.length} icon="⏳" color="#ef4444" />
             </div>
             <div className={styles.chartsGrid}>
               <div className={styles.chartCard}>
@@ -309,6 +427,11 @@ const repairReturnData = useMemo(() => {
                 type="text" placeholder="Search by ID or Customer..." className={styles.searchInput}
                 value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
               />
+              <select className={styles.filterSelect} value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+                <option value="All">All Types</option>
+                <option value="Repair">Repair</option>
+                <option value="Return">Return</option>
+              </select>
               <select className={styles.filterSelect} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
                 <option value="All">All Statuses</option>
                 <option value="Submitted">Submitted</option>
@@ -363,6 +486,14 @@ const repairReturnData = useMemo(() => {
       case "Reports":
         return (
           <div className={styles.reportsContainer}>
+            <div className={styles.filterBar}> 
+              <div className={styles.dateFilterGroup}>
+                <label>From:</label>
+                <input type="date" className={styles.searchInput} value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                <label>To:</label>
+                <input type="date" className={styles.searchInput} value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+              </div>
+            </div>
             <div className={styles.statsGrid}>
               <StatCard label="Total Feedbacks" value={totalReviews} icon="💬" color="#2563eb" />
               <StatCard label="Avg. Rating" value={`${avgRating} / 5`} icon="⭐" color="#eab308" />
@@ -401,6 +532,23 @@ const repairReturnData = useMemo(() => {
                   </ResponsiveContainer>
                 </div>
               </div>
+              {/* Monthly Trends Repairs vs Returns */}
+              <div className={styles.chartCard} style={{ gridColumn: 'span 2' }}>
+                <h3>Monthly Trends: Repairs vs Returns</h3>
+                <div className={styles.chartWrapper}>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="repairs" stroke="#10b981" strokeWidth={2} name="Repairs" />
+                      <Line type="monotone" dataKey="returns" stroke="#ef4444" strokeWidth={2} name="Returns" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
               {/* REPAIR VS RETURN PIE CHART */}
               <div className={styles.chartCard}>
                 <h3>Service Type Distribution</h3>
@@ -422,6 +570,56 @@ const repairReturnData = useMemo(() => {
                       </Pie>
                       <Tooltip />
                       <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              {/* TICKET TYPE DISTRIBUTION PIE CHART */}
+              <div className={styles.chartCard}>
+                <h3>Ticket Types (Product Categories)</h3>
+                <div className={styles.chartWrapper}>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={ticketTypeData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {ticketTypeData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={TYPE_COLORS[index % TYPE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend verticalAlign="bottom" height={36}/>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              {/* Γράφημα Escalated Tickets */}
+              <div className={styles.chartCard}>
+                <h3>Escalation Status</h3>
+                <div className={styles.chartWrapper}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={escalationData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={85}
+                        paddingAngle={8}
+                        dataKey="value"
+                      >
+                        {escalationData.map((entry, index) => (
+                          <Cell key={`cell-esc-${index}`} fill={ESCALATION_COLORS[index]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend verticalAlign="bottom" align="center" />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -505,6 +703,8 @@ const repairReturnData = useMemo(() => {
                 <label className={styles.statLabel}>Email Template</label>
                 <textarea 
                   className={styles.textareaField} 
+                  rows="8"
+                  style={{ minWidth: '100%', maxWidth: '100%' }}
                   defaultValue={`Dear {customer_name},\n\nYour repair request {ticket_id} has been {status}.\n\n{details}\n\nThank you for choosing our service.`}
                 />
                 <div className={styles.variableContainer}>
@@ -681,6 +881,13 @@ const AdvancedTicketTable = ({ data, navigate }) => (
       <tbody>
         {data.map((t) => (
           <tr key={t._id}>
+            <td>
+            {t.ticketId}
+            {/* Show a red dot if the ticket is stale */}
+            {getStaleTickets([t]).length > 0 && (
+              <span title="Overdue" style={{ color: 'red', marginLeft: '5px' }}>●</span>
+            )}
+          </td>
             <td style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>
               #{t.ticketId || t._id.substring(t._id.length - 8).toUpperCase()}
             </td>

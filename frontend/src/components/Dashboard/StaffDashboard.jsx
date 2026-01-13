@@ -17,6 +17,7 @@ const StaffDashboard = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("All");
   const navigate = useNavigate();
 
   const [activeView, setActiveView] = useState("all");
@@ -111,8 +112,14 @@ const StaffDashboard = () => {
         const ticketId = (ticket.ticketId || ticket._id).toLowerCase();
         const search = searchTerm.toLowerCase();
         return customerName.includes(search) || ticketId.includes(search);
+      })
+      .filter((ticket) => {
+        // type filter
+        if (filterType === "All") return true;
+        const ticketType = getServiceType(ticket);
+        return ticketType === filterType;
       });
-  }, [tickets, searchTerm, activeView]);
+  }, [tickets, searchTerm, activeView, filterType]);
 
   const stats = useMemo(
     () => ({
@@ -137,10 +144,10 @@ const StaffDashboard = () => {
     indexOfLastTicket
   );
 
-  // Reset to page 1 when search changes
+  // Reset to page 1 when search or filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, filterType]);
 
   if (loading)
     return <div className={styles.container}>Loading Workspace...</div>;
@@ -212,6 +219,15 @@ const StaffDashboard = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+        <select
+          className={styles.filterSelect}
+          value={filterType}
+          onChange={(e) => setFilterType(e.target.value)}
+        >
+          <option value="All">All Types</option>
+          <option value="Repair">Repair</option>
+          <option value="Return">Return</option>
+        </select>
       </div>
 
       {/* Table Section */}

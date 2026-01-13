@@ -296,6 +296,13 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Styling για το Legend (κείμενο κάτω από το Pie) */
+:global(.recharts-default-legend) {
+    font-size: 0.85rem !important;
+    font-weight: 500;
+    color: #64748b !important;
+}
+
 /* --- Styling for All Tickets Tab (Staff-Style Table) --- */
 
 .tableContainer {
@@ -352,4 +359,48 @@
 /* Εξασφάλιση ότι το Customer Name και Email έχουν σωστή στοίχιση */
 .miniTable td div[style*="fontWeight: 600"] {
     margin-bottom: 2px;
+}
+
+
+.staleAlert {
+    display: flex;
+    align-items: center;
+    background-color: #fef2f2; /* Light red */
+    border: 1px solid #fecaca;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+.alertIcon {
+    font-size: 1.5rem;
+}
+
+.alertText {
+    flex: 1;
+    color: #991b1b;
+    font-size: 0.95rem;
+}
+
+.alertAction {
+    background: #991b1b;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.alertAction:hover {
+    background: #7f1d1d;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
