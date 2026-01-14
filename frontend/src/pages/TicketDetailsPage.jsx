@@ -9,13 +9,13 @@ import {
 import { useAccess } from "@/context/AccessContext";
 import "./TicketDetails.css";
 
-
+// logic : define strict allowed transitions matching backend exactly
 const STATUS_TRANSITIONS = {
   "Submitted": ["Pending Validation", "Shipping", "In Progress", "Cancelled"],
-  "Pending Validation": ["In Progress", "Cancelled", "Completed"],
-  "Shipping": ["In Progress", "Cancelled"], 
+  "Pending Validation": ["In Progress", "Cancelled"],
+  "Shipping": ["In Progress", "Cancelled"],
   "In Progress": ["Waiting for Parts", "Shipped Back", "Ready for Pickup", "Completed", "Cancelled"],
-  "Waiting for Parts": ["In Progress","Completed", "Ready for Pickup","Cancelled"],
+  "Waiting for Parts": ["In Progress", "Cancelled"],
   "Shipped Back": ["Completed", "Cancelled"],
   "Ready for Pickup": ["Completed", "Cancelled"],
   "Completed": ["Closed"],
@@ -23,8 +23,23 @@ const STATUS_TRANSITIONS = {
   "Cancelled": [],
 };
 
-// helper to list all statuses for admin usage
+// logic : helper to list all statuses for admin usage
 const ALL_STATUSES = Object.keys(STATUS_TRANSITIONS);
+
+// logic : helper for timeline visualization
+function normalizeStatus(raw) {
+  if (!raw) return "Unknown";
+  const s = String(raw).toLowerCase();
+  if (s.includes("submitted")) return "Submitted";
+  if (s.includes("progress")) return "In Progress";
+  if (s.includes("validation")) return "Pending Validation";
+  if (s.includes("parts")) return "Waiting for Parts";
+  if (s.includes("shipping") && !s.includes("back")) return "Shipping";
+  if (s.includes("shipped back")) return "Shipped Back";
+  if (s.includes("pickup")) return "Ready for Pickup";
+  if (s.includes("complete")) return "Completed";
+  return String(raw).charAt(0).toUpperCase() + String(raw).slice(1);
+}
 
 export default function TicketDetailsPage() {
   const { id } = useParams();
@@ -35,16 +50,16 @@ export default function TicketDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // comment state
+  // logic : comment state
   const [commentText, setCommentText] = useState("");
   const [savingComment, setSavingComment] = useState(false);
   const [commentType, setCommentType] = useState("Note");
 
-  // lightbox state
+  // logic : lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // fetch ticket data
+  // logic : fetch ticket data
   const fetchTicket = async () => {
     try {
       setLoading(true);
@@ -61,7 +76,21 @@ export default function TicketDetailsPage() {
     fetchTicket();
   }, [id]);
 
-  // status update handler
+  // logic : restore CSS class helper for comments
+  const getCommentTypeClass = (type) => {
+    switch (type) {
+      case "Waiting for Parts":
+        return "td-chip-waiting";
+      case "Escalation":
+        return "td-chip-escalation";
+      case "SLA Risk":
+        return "td-chip-sla";
+      default:
+        return "td-chip-note";
+    }
+  };
+
+  // logic : status update handler
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     try {
@@ -69,7 +98,7 @@ export default function TicketDetailsPage() {
       await updateTicketStatus(id, newStatus);
     } catch (err) {
       alert(err?.response?.data?.message || "Failed to update status");
-      fetchTicket(); // fallback : revert on error
+      fetchTicket(); // revert
     }
   };
 
@@ -97,7 +126,7 @@ export default function TicketDetailsPage() {
     }
   };
 
-  //lightbox handlers
+  // logic : lightbox handlers
   const openLightbox = (url) => {
     setSelectedImage(url);
     setLightboxOpen(true);
@@ -111,7 +140,7 @@ export default function TicketDetailsPage() {
   if (error) return <div className="td-container" style={{ color: "red" }}>{error}</div>;
   if (!ticket) return null;
 
-  //calculate allowed next statuses
+  // logic : calculate allowed next statuses
   const currentStatus = ticket.status || "Submitted";
   const requestType = ticket.serviceType || "Repair";
   const isDropoff = ticket.deliveryMethod && ticket.deliveryMethod.toLowerCase() !== "courier";
@@ -120,10 +149,10 @@ export default function TicketDetailsPage() {
 
   if (user) {
     if (user.role === "Technician") {
-      //technicians follow strict graph (forward only by definition of keys)
+      // logic : technicians follow strict graph (forward only)
       allowedNextStatuses = STATUS_TRANSITIONS[currentStatus] || [];
     } else {
-      //staff/admin can jump to any status except current
+      // logic : staff/admin can jump to any status
       allowedNextStatuses = ALL_STATUSES.filter((s) => s !== currentStatus);
     }
   }
@@ -132,7 +161,7 @@ export default function TicketDetailsPage() {
     <div className="td-page">
       <div className="td-container">
         <button onClick={() => navigate(-1)} className="td-back-btn">
-          ← Back
+          ← Back to Dashboard
         </button>
 
         <div className="td-card">
@@ -150,6 +179,61 @@ export default function TicketDetailsPage() {
               {ticket.status}
             </div>
           </div>
+
+          {/* --- TIMELINE --- */}
+          {normalizeStatus(ticket.status) !== "Cancelled" &&
+            normalizeStatus(ticket.status) !== "Closed" && (
+              <div className="td-timeline-wrapper">
+                <div className="td-timeline-container">
+                  {(() => {
+                    const steps = isDropoff
+                      ? ["Submitted", "In Progress", "Ready for Pickup", "Completed"]
+                      : ["Submitted", "Shipping", "In Progress", "Shipped Back", "Completed"];
+
+                    let activeStatus = normalizeStatus(ticket.status);
+                    
+                    if (activeStatus === "Pending Validation" || activeStatus === "Waiting for Parts") {
+                      activeStatus = "In Progress";
+                    }
+
+                    const currentIndex = steps.findIndex((s) => s === activeStatus);
+                    const progressWidth = currentIndex < 0 ? 0 : ((currentIndex + 1) / steps.length) * 100;
+
+                    return (
+                      <>
+                        <div className="td-timeline-progress-track">
+                          <div
+                            className="td-timeline-progress-fill"
+                            style={{ width: `${progressWidth}%` }}
+                          ></div>
+                        </div>
+
+                        <div className="td-timeline-steps">
+                          {steps.map((step, idx) => (
+                            <div key={step} className="td-timeline-step">
+                              <div
+                                className={`td-timeline-step-circle ${
+                                  step === activeStatus || idx <= currentIndex ? "active" : ""
+                                }`}
+                              >
+                                {idx + 1}
+                              </div>
+                              <div
+                                className={`td-timeline-step-label ${
+                                  step === activeStatus ? "active" : ""
+                                }`}
+                              >
+                                {step}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
 
           <div className="td-content">
             <div className="td-grid">
@@ -203,7 +287,7 @@ export default function TicketDetailsPage() {
                               <span className="td-comment-date">
                                 {new Date(c.createdAt).toLocaleString()}
                               </span>
-                              <span className={`td-chip-${(c.type || "note").toLowerCase().replace(/ /g,"-")}`}>
+                              <span className={`td-comment-chip ${getCommentTypeClass(c.type)}`}>
                                 {c.type}
                               </span>
                             </div>
@@ -278,6 +362,34 @@ export default function TicketDetailsPage() {
                     )}
                   </div>
                 </div>
+
+                {/* --- RETURN LOGIC BOX --- */}
+                {ticket.serviceType === "Return" && (
+                  <div className="td-section return-alert-box">
+                    <div className="td-section-title" style={{ color: "#d97706" }}>
+                      Return Request Details
+                    </div>
+                    <div className="td-text">
+                      <strong>Customer Preference:</strong> <br />
+                      <span className="badge-preference">
+                        {ticket.customerSelection || "Not Specified"}
+                      </span>
+                      <div style={{ marginTop: "15px", borderTop: "1px dashed #fcd34d", paddingTop: "10px" }}>
+                        <strong>Validation Check:</strong> <br />
+                        {(() => {
+                          const pDate = new Date(ticket.product?.purchaseDate);
+                          const created = new Date(ticket.createdAt);
+                          const diff = Math.ceil((created - pDate) / (1000 * 60 * 60 * 24));
+                          return (
+                            <span style={{ fontSize: "13px", color: "#666" }}>
+                              Purchased <b>{diff} days</b> before request.
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* ACTION PANEL */}
                 {(user.role === "Technician" || user.role === "Admin" || user.role === "Employee") && (
