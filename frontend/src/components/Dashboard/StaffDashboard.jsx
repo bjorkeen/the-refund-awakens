@@ -79,7 +79,11 @@ const StaffDashboard = () => {
       setTickets((prev) =>
         prev.map((t) => (t._id === ticketId ? { ...t, status: newStatus } : t))
       );
-      showNotification("Status updated successfully!", "success");
+      if (newStatus === "Completed") {
+        showNotification("An email has been sent to the customer that the process is completed successfully.", "success");
+      } else {
+        showNotification("Status updated successfully!", "success");
+      }
     } catch (error) {
       showNotification("Status update failed.", "error");
     }

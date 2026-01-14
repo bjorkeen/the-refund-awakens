@@ -251,6 +251,22 @@ const TYPE_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#64748b'];
 // Χρώματα για το γράφημα (Κόκκινο για τα Escalated)
 const ESCALATION_COLORS = ['#ef4444', '#e2e8f0'];
 
+// PROBLEM CATEGORY DATA FOR BAR CHART
+const problemCategoryData = useMemo(() => {
+  const counts = filteredTickets.reduce((acc, t) => {
+    const category = t.issue?.category || "Unknown";
+    acc[category] = (acc[category] || 0) + 1;
+    return acc;
+  }, {});
+
+  return Object.keys(counts).map(category => ({
+    name: category,
+    count: counts[category]
+  }));
+}, [filteredTickets]);
+
+const CATEGORY_COLORS = ['#0ea5e9', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#84cc16', '#10b981'];
+
 // MONTHLY TRENDS DATA - Repairs vs Returns by Month
 const monthlyData = useMemo(() => {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -546,6 +562,21 @@ const monthlyData = useMemo(() => {
                       <Line type="monotone" dataKey="repairs" stroke="#10b981" strokeWidth={2} name="Repairs" />
                       <Line type="monotone" dataKey="returns" stroke="#ef4444" strokeWidth={2} name="Returns" />
                     </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              {/* Problem Category Bar Chart */}
+              <div className={styles.chartCard}>
+                <h3>Problem Categories</h3>
+                <div className={styles.chartWrapper}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={problemCategoryData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import {
   getAssignedTickets,
   updateTicketStatus,
 } from "@/services/ticketService";
+import { useNotification } from "@/context/NotificationContext";
 import "./TechnicianDashboard.css";
 
 const STATUS_TRANSITIONS = {
@@ -21,6 +22,7 @@ const STATUS_TRANSITIONS = {
 
 const TechnicianDashboard = () => {
   const navigate = useNavigate();
+  const { showNotification } = useNotification();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,8 +52,11 @@ const TechnicianDashboard = () => {
         prev.map((t) => (t._id === ticketId ? { ...t, status: newStatus } : t))
       );
       await updateTicketStatus(ticketId, newStatus);
+      if (newStatus === "Completed") {
+        showNotification("An email has been sent to the customer that the process is completed successfully.", "success");
+      }
     } catch (error) {
-      alert("Failed to update status");
+      showNotification("Failed to update status", "error");
       fetchData();
     }
   };

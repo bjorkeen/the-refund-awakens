@@ -7,6 +7,7 @@ import {
   escalateTicket,
 } from "@/services/ticketService";
 import { useAccess } from "@/context/AccessContext";
+import { useNotification } from "@/context/NotificationContext";
 import "./TicketDetails.css";
 
 // logic : define strict allowed transitions matching backend exactly
@@ -45,6 +46,7 @@ export default function TicketDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAccess();
+  const { showNotification } = useNotification();
 
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -96,8 +98,11 @@ export default function TicketDetailsPage() {
     try {
       setTicket((prev) => ({ ...prev, status: newStatus }));
       await updateTicketStatus(id, newStatus);
+      if (newStatus === "Completed") {
+        showNotification("An email has been sent to the customer that the process is completed successfully.", "success");
+      }
     } catch (err) {
-      alert(err?.response?.data?.message || "Failed to update status");
+      showNotification(err?.response?.data?.message || "Failed to update status", "error");
       fetchTicket(); // revert
     }
   };
@@ -106,9 +111,9 @@ export default function TicketDetailsPage() {
     try {
       const updated = await escalateTicket(id);
       setTicket(updated);
-      alert("✅ Ticket escalated.");
+      showNotification("Ticket escalated successfully!", "success");
     } catch (err) {
-      alert("Failed to escalate ticket.");
+      showNotification("Failed to escalate ticket.", "error");
     }
   };
 
@@ -120,7 +125,7 @@ export default function TicketDetailsPage() {
       setTicket(updated);
       setCommentText("");
     } catch (err) {
-      alert("Failed to add comment.");
+      showNotification("Failed to add comment.", "error");
     } finally {
       setSavingComment(false);
     }
