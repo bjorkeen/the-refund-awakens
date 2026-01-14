@@ -881,15 +881,12 @@ const AdvancedTicketTable = ({ data, navigate }) => (
       <tbody>
         {data.map((t) => (
           <tr key={t._id}>
-            <td>
-            {t.ticketId}
-            {/* Show a red dot if the ticket is stale */}
-            {getStaleTickets([t]).length > 0 && (
-              <span title="Overdue" style={{ color: 'red', marginLeft: '5px' }}>●</span>
-            )}
-          </td>
             <td style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>
-              #{t.ticketId || t._id.substring(t._id.length - 8).toUpperCase()}
+              {t.ticketId}
+              {/* Show a red dot if the ticket is stale */}
+              {getStaleTickets([t]).length > 0 && (
+                <span title="Overdue" style={{ color: 'red', marginLeft: '5px' }}>●</span>
+              )}
             </td>
             <td>
               <div style={{ fontWeight: "600" }}>{t.contactInfo?.fullName || t.customer?.fullName || 'N/A'}</div>

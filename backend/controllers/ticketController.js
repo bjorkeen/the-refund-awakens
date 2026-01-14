@@ -290,5 +290,66 @@ exports.escalateTicket = async (req, res) => {
     } catch (e) { res.status(500).json({message: "Error"}); }
 };
 
-exports.submitFeedback = async (req, res) => { /* Keep logic */ };
-exports.getFeedbackKPIs = async (req, res) => { /* Keep logic */ };
+exports.submitFeedback = async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    
+    // Validate rating
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Rating must be between 1 and 5" });
+    }
+
+    const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    // Check if user owns this ticket
+    if (ticket.customer.toString() !== req.user.userId) {
+      return res.status(403).json({ message: "Unauthorized to provide feedback for this ticket" });
+    }
+
+    // Update feedback
+    ticket.feedback = {
+      rating: parseInt(rating),
+      comment: comment || "",
+      createdAt: new Date(),
+    };
+
+    await ticket.save();
+
+    res.json({
+      success: true,
+      message: "Feedback submitted successfully",
+      feedback: ticket.feedback
+    });
+  } catch (error) {
+    console.error("Submit Feedback Error:", error);
+    res.status(500).json({ message: "Server error while submitting feedback" });
+  }
+};
+
+exports.getFeedbackKPIs = async (req, res) => {
+  try {
+    // Aggregate feedback ratings from all tickets that have feedback
+    const stats = await Ticket.aggregate([
+      { 
+        $match: { 
+          "feedback.rating": { $exists: true, $ne: null } 
+        } 
+      },
+      {
+        $group: {
+          _id: "$feedback.rating",
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    res.json(stats);
+  } catch (error) {
+    console.error("Get Feedback KPIs Error:", error);
+    res.status(500).json({ message: "Error fetching feedback statistics" });
+  }
+};

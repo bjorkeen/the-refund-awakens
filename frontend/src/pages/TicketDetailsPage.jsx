@@ -12,10 +12,10 @@ import "./TicketDetails.css";
 // logic : define strict allowed transitions matching backend exactly
 const STATUS_TRANSITIONS = {
   "Submitted": ["Pending Validation", "Shipping", "In Progress", "Cancelled"],
-  "Pending Validation": ["In Progress", "Cancelled"],
-  "Shipping": ["In Progress", "Cancelled"],
+  "Pending Validation": ["In Progress", "Cancelled", "Completed"],
+  "Shipping": ["In Progress", "Cancelled"], 
   "In Progress": ["Waiting for Parts", "Shipped Back", "Ready for Pickup", "Completed", "Cancelled"],
-  "Waiting for Parts": ["In Progress", "Cancelled"],
+  "Waiting for Parts": ["In Progress","Ready for Pickup","Cancelled"],
   "Shipped Back": ["Completed", "Cancelled"],
   "Ready for Pickup": ["Completed", "Cancelled"],
   "Completed": ["Closed"],
