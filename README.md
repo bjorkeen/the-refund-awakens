@@ -116,13 +116,13 @@ cd the-refund-awakens
 * .env file to be added to the backend folder https://drive.google.com/file/d/1VpgRY32E7AduaYKf0RNnhR1sEgwMawAj/view?usp=drive_link 
 * .env file to be added just to the project folder https://drive.google.com/file/d/1ODlLpcDRSqzchQ2pjAfRI7SPCekK0OaA/view?usp=sharing 
 
-2. Start the application (Production Mode):
+3. Start the application (Production Mode):
 
 ```bash
 docker compose up --build
 ```
 
-3. Access the app:
+4. Access the app:
 
     Frontend: http://localhost:3000
 
