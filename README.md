@@ -137,6 +137,29 @@ You can **Sign Up** to create a new Customer user.
 
 * Password must contain at least 8 characters, 1 number, and 1 symbol (e.g. `Demo123!`).
 
+Alternatively you can use one of the following demo accounts to navigate throught the different views each role has:
+
+1. Customer 
+    - Email : customer@demo.com
+    - Password : demo123!
+
+2. Employee
+    - Email : staff@demo.com
+    - Password : demo123!
+
+3. Technician (Repair Center's employee)
+    - Emails : 
+        mobile@demo.com
+        mobile2@demo.com
+        tv@demo.com
+        laptop@demo.com
+        other@demo.com
+    - Password : demo123!
+
+5. Manager
+    - Email : manager@demo.com
+    - Password : demo123!
+
 ---
 
 ## Folder Structure
